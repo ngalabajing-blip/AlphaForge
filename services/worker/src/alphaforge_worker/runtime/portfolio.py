@@ -4,12 +4,12 @@ In-memory portfolio used by the backtest engine and live runner.
 Tracks balances, open positions, realised PnL, and produces a fill record per
 order.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
 
 
 @dataclass
@@ -25,7 +25,7 @@ class Position:
 @dataclass
 class Fill:
     symbol: str
-    side: str              # buy | sell
+    side: str  # buy | sell
     price: Decimal
     quantity: Decimal
     fee: Decimal

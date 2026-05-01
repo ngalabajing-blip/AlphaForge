@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+from alphaforge_shared.chains import supports_chain
+from alphaforge_shared.utils import normalise_address
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from alphaforge_api.core.database import get_session
-from alphaforge_api.core.security import CurrentUser, get_current_user, require_permission
+from alphaforge_api.core.security import (
+    CurrentUser,
+    get_current_user,
+    require_permission,
+)
 from alphaforge_api.repositories.audit import AuditRepository
 from alphaforge_api.schemas.audit import AuditOut, AuditRequestIn
 from alphaforge_api.services.audit_service import AuditService
-from alphaforge_shared.chains import supports_chain
-from alphaforge_shared.utils import normalise_address
 
 router = APIRouter(prefix="/audits")
 
@@ -22,10 +26,17 @@ async def request_audit(
 ) -> AuditOut:
     if not supports_chain(payload.chain):
         raise HTTPException(status_code=400, detail=f"unsupported chain: {payload.chain}")
-    address = normalise_address(payload.address) if payload.chain not in {"sol", "cosmos"} else payload.address.strip()
+    address = (
+        normalise_address(payload.address)
+        if payload.chain not in {"sol", "cosmos"}
+        else payload.address.strip()
+    )
     service = AuditService(session)
     job = await service.enqueue(
-        requested_by=user.user_id, chain=payload.chain, address=address, deep=payload.deep
+        requested_by=user.user_id,
+        chain=payload.chain,
+        address=address,
+        deep=payload.deep,
     )
     return AuditOut.model_validate(job)
 

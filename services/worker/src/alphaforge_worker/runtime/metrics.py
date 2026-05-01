@@ -1,10 +1,11 @@
 """Backtest metrics — Sharpe, Sortino, win-rate, drawdown."""
+
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Sequence
 
 
 @dataclass

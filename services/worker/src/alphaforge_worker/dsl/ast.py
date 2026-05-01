@@ -10,10 +10,11 @@ A parsed strategy looks like::
         risk=RiskConfig(per_trade=0.02, max_drawdown=0.4),
     )
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Sequence
+from typing import Any
 
 
 # ── expression nodes (compiled lazily by ``compile_expression``) ──────────────
@@ -40,20 +41,20 @@ class Symbol:
 @dataclass(frozen=True)
 class FunctionCall:
     name: str
-    args: tuple["Expr", ...] = ()
+    args: tuple[Expr, ...] = ()
 
 
 @dataclass(frozen=True)
 class BinOp:
     op: str
-    left: "Expr"
-    right: "Expr"
+    left: Expr
+    right: Expr
 
 
 @dataclass(frozen=True)
 class UnaryOp:
     op: str
-    operand: "Expr"
+    operand: Expr
 
 
 Expr = Number | Bool | String | Symbol | FunctionCall | BinOp | UnaryOp
@@ -70,7 +71,7 @@ class Indicator:
 @dataclass(frozen=True)
 class Rule:
     when: Expr
-    then: str         # buy, sell, close, hold, alert
+    then: str  # buy, sell, close, hold, alert
     size: Expr | None = None
     note: str | None = None
 

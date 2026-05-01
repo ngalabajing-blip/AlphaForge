@@ -9,9 +9,11 @@ def test_render_minimal():
 
 
 def test_render_details():
-    out = render_template({
-        "title": "t",
-        "payload": {"price": 123, "delta": "+5%"},
-    })
+    out = render_template(
+        {
+            "title": "t",
+            "payload": {"price": 123, "delta": "+5%"},
+        }
+    )
     assert "price" in out["text"]
     assert "delta" in out["text"]

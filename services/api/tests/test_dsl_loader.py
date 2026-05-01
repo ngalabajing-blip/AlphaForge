@@ -1,7 +1,5 @@
 import pytest
-
 from alphaforge_api.services.dsl_loader import loads
-
 
 VALID = """
 strategy: ema-cross

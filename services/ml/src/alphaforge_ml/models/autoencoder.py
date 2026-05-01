@@ -4,11 +4,12 @@ Tiny PCA-based autoencoder fallback.
 When PyTorch is available we'd swap in an actual MLP autoencoder; for the
 default install we provide a numpy-only PCA reconstruction error scorer.
 """
+
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 
 @dataclass

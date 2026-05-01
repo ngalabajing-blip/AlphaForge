@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class StrategyCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: str | None = None
     is_public: bool = False
     tags: list[str] = Field(default_factory=list)
     raw_source: str = Field(min_length=1)
@@ -16,11 +16,11 @@ class StrategyCreate(BaseModel):
 
 
 class StrategyUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    is_public: Optional[bool] = None
-    is_archived: Optional[bool] = None
-    tags: Optional[list[str]] = None
+    name: str | None = None
+    description: str | None = None
+    is_public: bool | None = None
+    is_archived: bool | None = None
+    tags: list[str] | None = None
 
 
 class StrategyVersionOut(BaseModel):
@@ -30,7 +30,7 @@ class StrategyVersionOut(BaseModel):
     version: int
     raw_source: str
     parameters: dict[str, Any]
-    notes: Optional[str]
+    notes: str | None
     created_at: datetime
 
 
@@ -40,7 +40,7 @@ class StrategyOut(BaseModel):
     id: str
     owner_id: str
     name: str
-    description: Optional[str]
+    description: str | None
     is_public: bool
     is_archived: bool
     tags: list[str]

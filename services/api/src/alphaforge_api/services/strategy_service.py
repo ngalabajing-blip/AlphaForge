@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from typing import Optional
-
+from alphaforge_shared.exceptions import StrategyParseError
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from alphaforge_api.repositories.strategy import StrategyRepository
 from alphaforge_api.schemas.strategy import StrategyCreate, StrategyUpdate
 from alphaforge_api.services.dsl_loader import loads as parse_dsl
-from alphaforge_shared.exceptions import StrategyParseError
 
 
 class StrategyService:
@@ -60,7 +58,7 @@ class StrategyService:
         owner_id: str,
         raw_source: str,
         parameters: dict,
-        notes: Optional[str] = None,
+        notes: str | None = None,
     ):
         strategy = await self.repo.get_for_owner(strategy_id, owner_id)
         if strategy is None:
@@ -70,6 +68,9 @@ class StrategyService:
         except ValueError as exc:
             raise StrategyParseError(str(exc)) from exc
         return await self.repo.add_version(
-            strategy=strategy, raw_source=raw_source, dsl=dsl,
-            parameters=parameters, notes=notes,
+            strategy=strategy,
+            raw_source=raw_source,
+            dsl=dsl,
+            parameters=parameters,
+            notes=notes,
         )

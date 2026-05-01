@@ -1,8 +1,6 @@
-import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
-
 from alphaforge_api.services.market_service import MarketService
 from alphaforge_shared.symbols import parse_symbol
 
@@ -17,7 +15,7 @@ async def test_latest_price_is_positive():
 @pytest.mark.asyncio
 async def test_candles_emit_requested_count():
     svc = MarketService()
-    end = datetime.now(tz=timezone.utc)
+    end = datetime.now(tz=UTC)
     start = end - timedelta(hours=10)
     rows = await svc.candles(parse_symbol("BTC/USDT"), timeframe="1h", start=start, end=end, limit=10)
     assert 1 <= len(rows) <= 10

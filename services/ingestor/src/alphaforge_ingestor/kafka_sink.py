@@ -1,14 +1,12 @@
 """Kafka sink — wraps :class:`EventProducer` with metric counters."""
+
 from __future__ import annotations
-
-from typing import Any
-
-from prometheus_client import Counter
 
 from alphaforge_shared.events import BaseEvent
 from alphaforge_shared.kafka import EventProducer
 from alphaforge_shared.logging import get_logger
 from alphaforge_shared.topics import Topic
+from prometheus_client import Counter
 
 log = get_logger("alphaforge_ingestor.sink")
 
@@ -46,8 +44,14 @@ class KafkaSink:
     def is_started(self) -> bool:
         return self._started
 
-    async def publish(self, topic: Topic, event: BaseEvent, *, key: str | None = None,
-                      chain: str | None = None) -> None:
+    async def publish(
+        self,
+        topic: Topic,
+        event: BaseEvent,
+        *,
+        key: str | None = None,
+        chain: str | None = None,
+    ) -> None:
         chain_label = chain or "unknown"
         if not self._started:
             EVENTS_FAILED.labels(topic.name, chain_label, "not_started").inc()

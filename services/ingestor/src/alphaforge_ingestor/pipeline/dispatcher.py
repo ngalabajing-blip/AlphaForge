@@ -4,9 +4,14 @@ Per-chain dispatcher.
 Routes the right adapter (EVM / Solana / Cosmos) for each :class:`ChainSpec`,
 manages reconnect/backoff, and forwards normalised events to the Kafka sink.
 """
+
 from __future__ import annotations
 
 import asyncio
+
+from alphaforge_shared.chains import ChainFamily, ChainSpec
+from alphaforge_shared.exceptions import UnsupportedChainError
+from alphaforge_shared.logging import get_logger
 
 from alphaforge_ingestor.adapters.base import ChainAdapter
 from alphaforge_ingestor.adapters.cosmos import CosmosAdapter
@@ -14,9 +19,6 @@ from alphaforge_ingestor.adapters.evm import EVMAdapter
 from alphaforge_ingestor.adapters.solana import SolanaAdapter
 from alphaforge_ingestor.config import get_settings
 from alphaforge_ingestor.kafka_sink import KafkaSink
-from alphaforge_shared.chains import ChainFamily, ChainSpec
-from alphaforge_shared.exceptions import UnsupportedChainError
-from alphaforge_shared.logging import get_logger
 
 log = get_logger("alphaforge_ingestor.dispatcher")
 

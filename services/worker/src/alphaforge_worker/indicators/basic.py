@@ -1,8 +1,8 @@
 """Basic technical indicators implemented in pure Python."""
+
 from __future__ import annotations
 
 from collections import deque
-from typing import Any, Deque
 
 from alphaforge_worker.indicators.registry import Indicator, register_indicator
 
@@ -12,7 +12,7 @@ class SMA(Indicator):
     def __init__(self, period: int = 20, source: str = "close") -> None:
         self.period = period
         self.source = source
-        self._buffer: Deque[float] = deque(maxlen=period)
+        self._buffer: deque[float] = deque(maxlen=period)
         self._values: list[float] = []
 
     def update(self, candle: dict) -> float:
@@ -53,8 +53,8 @@ class RSI(Indicator):
     def __init__(self, period: int = 14, source: str = "close") -> None:
         self.period = period
         self.source = source
-        self._gains: Deque[float] = deque(maxlen=period)
-        self._losses: Deque[float] = deque(maxlen=period)
+        self._gains: deque[float] = deque(maxlen=period)
+        self._losses: deque[float] = deque(maxlen=period)
         self._prev: float | None = None
         self._values: list[float] = []
 
@@ -118,7 +118,7 @@ class MACD(Indicator):
 class ATR(Indicator):
     def __init__(self, period: int = 14) -> None:
         self.period = period
-        self._buffer: Deque[float] = deque(maxlen=period)
+        self._buffer: deque[float] = deque(maxlen=period)
         self._prev_close: float | None = None
         self._values: list[float] = []
 
@@ -146,7 +146,7 @@ class Bollinger(Indicator):
         self.period = period
         self.k = k
         self.source = source
-        self._buffer: Deque[float] = deque(maxlen=period)
+        self._buffer: deque[float] = deque(maxlen=period)
         self._upper: list[float] = []
         self._lower: list[float] = []
         self._mid: list[float] = []
@@ -161,7 +161,7 @@ class Bollinger(Indicator):
             return {"upper": v, "mid": v, "lower": v}
         mu = sum(self._buffer) / self.period
         var = sum((x - mu) ** 2 for x in self._buffer) / self.period
-        std = var ** 0.5
+        std = var**0.5
         upper = mu + self.k * std
         lower = mu - self.k * std
         self._mid.append(mu)
@@ -182,8 +182,8 @@ class Stochastic(Indicator):
     def __init__(self, k_period: int = 14, d_period: int = 3) -> None:
         self.k_period = k_period
         self.d_period = d_period
-        self._highs: Deque[float] = deque(maxlen=k_period)
-        self._lows: Deque[float] = deque(maxlen=k_period)
+        self._highs: deque[float] = deque(maxlen=k_period)
+        self._lows: deque[float] = deque(maxlen=k_period)
         self._k: list[float] = []
         self._d: list[float] = []
 
@@ -199,7 +199,7 @@ class Stochastic(Indicator):
         lo = min(self._lows)
         k = 100.0 * (c - lo) / (hi - lo) if hi != lo else 50.0
         self._k.append(k)
-        d = sum(self._k[-self.d_period:]) / min(len(self._k), self.d_period)
+        d = sum(self._k[-self.d_period :]) / min(len(self._k), self.d_period)
         self._d.append(d)
         return {"k": k, "d": d}
 
@@ -214,9 +214,9 @@ class Stochastic(Indicator):
 class ADX(Indicator):
     def __init__(self, period: int = 14) -> None:
         self.period = period
-        self._tr: Deque[float] = deque(maxlen=period)
-        self._plus_dm: Deque[float] = deque(maxlen=period)
-        self._minus_dm: Deque[float] = deque(maxlen=period)
+        self._tr: deque[float] = deque(maxlen=period)
+        self._plus_dm: deque[float] = deque(maxlen=period)
+        self._minus_dm: deque[float] = deque(maxlen=period)
         self._prev_high: float | None = None
         self._prev_low: float | None = None
         self._prev_close: float | None = None

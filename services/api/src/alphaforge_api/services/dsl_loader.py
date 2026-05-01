@@ -9,6 +9,7 @@ walker, indicator registry, etc). The API service only needs to:
 
 For full semantic validation we POST to the worker.
 """
+
 from __future__ import annotations
 
 from typing import Any

@@ -1,4 +1,5 @@
 """Inbound webhooks (e.g. payment provider, third-party data sources)."""
+
 from __future__ import annotations
 
 import hmac

@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class BacktestCreate(BaseModel):
     strategy_id: str
-    strategy_version: Optional[int] = None
+    strategy_version: int | None = None
     start_at: datetime
     end_at: datetime
     timeframe: str = "1h"
@@ -32,13 +32,13 @@ class BacktestTradeOut(BaseModel):
 
     id: str
     opened_at: datetime
-    closed_at: Optional[datetime]
+    closed_at: datetime | None
     symbol: str
     side: str
     entry_price: Decimal
-    exit_price: Optional[Decimal]
+    exit_price: Decimal | None
     quantity: Decimal
-    pnl: Optional[Decimal]
+    pnl: Decimal | None
     fees: Decimal
 
 
@@ -52,20 +52,20 @@ class BacktestSummary(BaseModel):
     end_at: datetime
     timeframe: str
     initial_balance: Decimal
-    final_balance: Optional[Decimal]
-    pnl_pct: Optional[Decimal]
-    sharpe: Optional[Decimal]
-    max_drawdown: Optional[Decimal]
-    trades_count: Optional[int]
+    final_balance: Decimal | None
+    pnl_pct: Decimal | None
+    sharpe: Decimal | None
+    max_drawdown: Decimal | None
+    trades_count: int | None
     created_at: datetime
 
 
 class BacktestOut(BacktestSummary):
     fee_bps: Decimal
     slippage_bps: Decimal
-    pnl_abs: Optional[Decimal]
-    sortino: Optional[Decimal]
-    win_rate: Optional[Decimal]
+    pnl_abs: Decimal | None
+    sortino: Decimal | None
+    win_rate: Decimal | None
     metrics: dict[str, Any]
-    error: Optional[str]
+    error: str | None
     trades: list[BacktestTradeOut] = Field(default_factory=list)

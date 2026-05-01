@@ -1,8 +1,5 @@
 import time
 
-import pytest
-from jose import jwt
-
 from alphaforge_api.core.config import get_settings
 from alphaforge_api.core.security import (
     Role,
@@ -14,6 +11,7 @@ from alphaforge_api.core.security import (
     hash_password,
     verify_password,
 )
+from jose import jwt
 
 
 def test_password_hash_roundtrip():

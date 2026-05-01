@@ -1,11 +1,15 @@
-import math
-
-from alphaforge_worker.indicators import INDICATORS, EMA, RSI, MACD, Bollinger, ATR
+from alphaforge_worker.indicators import ATR, EMA, INDICATORS, MACD, RSI, Bollinger
 
 
 def _candles(n=80, base=100):
     return [
-        {"open": base + i, "high": base + i + 0.5, "low": base + i - 0.5, "close": base + i, "volume": 10}
+        {
+            "open": base + i,
+            "high": base + i + 0.5,
+            "low": base + i - 0.5,
+            "close": base + i,
+            "volume": 10,
+        }
         for i in range(n)
     ]
 

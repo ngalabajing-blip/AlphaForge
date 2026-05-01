@@ -41,7 +41,7 @@ export default function Inspector({ selected }: Props) {
 
   useEffect(() => {
     setDraft(selected?.data?.params ?? {});
-  }, [selected?.id]);
+  }, [selected?.id, selected?.data?.params]);
 
   if (!selected) {
     return (

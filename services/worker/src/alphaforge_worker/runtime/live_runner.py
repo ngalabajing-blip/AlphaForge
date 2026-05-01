@@ -1,7 +1,6 @@
 """Live strategy runner — stub that subscribes to the signal feed."""
-from __future__ import annotations
 
-import asyncio
+from __future__ import annotations
 
 from alphaforge_shared.logging import get_logger
 

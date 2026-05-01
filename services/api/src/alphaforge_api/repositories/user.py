@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,10 +12,10 @@ class UserRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def get(self, user_id: str) -> Optional[User]:
+    async def get(self, user_id: str) -> User | None:
         return await self.session.get(User, user_id)
 
-    async def get_by_email(self, email: str) -> Optional[User]:
+    async def get_by_email(self, email: str) -> User | None:
         stmt = select(User).where(User.email == email.lower())
         return (await self.session.execute(stmt)).scalar_one_or_none()
 
@@ -29,7 +28,7 @@ class UserRepository:
         return user
 
     async def touch_login(self, user: User) -> None:
-        user.last_login_at = datetime.now(tz=timezone.utc)
+        user.last_login_at = datetime.now(tz=UTC)
         await self.session.flush()
 
     async def list(self, *, limit: int = 50, offset: int = 0) -> list[User]:
@@ -38,6 +37,7 @@ class UserRepository:
 
     async def count(self) -> int:
         from sqlalchemy import func
+
         stmt = select(func.count()).select_from(User)
         return int((await self.session.execute(stmt)).scalar() or 0)
 
@@ -46,8 +46,15 @@ class APIKeyRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def create(self, *, user_id: str, label: str, key_hash: str, scopes: list[str],
-                     expires_at: Optional[datetime] = None) -> APIKey:
+    async def create(
+        self,
+        *,
+        user_id: str,
+        label: str,
+        key_hash: str,
+        scopes: list[str],
+        expires_at: datetime | None = None,
+    ) -> APIKey:
         key = APIKey(
             user_id=user_id,
             label=label,
@@ -59,7 +66,7 @@ class APIKeyRepository:
         await self.session.flush()
         return key
 
-    async def get_by_hash(self, key_hash: str) -> Optional[APIKey]:
+    async def get_by_hash(self, key_hash: str) -> APIKey | None:
         stmt = select(APIKey).where(APIKey.key_hash == key_hash, APIKey.revoked_at.is_(None))
         return (await self.session.execute(stmt)).scalar_one_or_none()
 
@@ -68,10 +75,10 @@ class APIKeyRepository:
         return list((await self.session.execute(stmt)).scalars().all())
 
     async def revoke(self, api_key: APIKey) -> APIKey:
-        api_key.revoked_at = datetime.now(tz=timezone.utc)
+        api_key.revoked_at = datetime.now(tz=UTC)
         await self.session.flush()
         return api_key
 
     async def touch(self, api_key: APIKey) -> None:
-        api_key.last_used_at = datetime.now(tz=timezone.utc)
+        api_key.last_used_at = datetime.now(tz=UTC)
         await self.session.flush()

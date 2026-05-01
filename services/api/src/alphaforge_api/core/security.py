@@ -7,22 +7,23 @@ Authentication & authorization primitives.
 * RBAC role enum + permission map
 * FastAPI dependencies for ``current_user`` / ``require_role``
 """
+
 from __future__ import annotations
 
 import hashlib
 import hmac
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import Any
 
+from alphaforge_shared.logging import get_logger
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from alphaforge_api.core.config import get_settings
-from alphaforge_shared.logging import get_logger
 
 log = get_logger("alphaforge_api.security")
 _pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -39,21 +40,30 @@ class Role(str, Enum):
 PERMISSIONS: dict[Role, frozenset[str]] = {
     Role.ADMIN: frozenset(
         {
-            "read:any", "write:any",
-            "strategies:create", "strategies:edit", "strategies:delete",
-            "backtests:run", "backtests:read",
+            "read:any",
+            "write:any",
+            "strategies:create",
+            "strategies:edit",
+            "strategies:delete",
+            "backtests:run",
+            "backtests:read",
             "alerts:manage",
-            "audits:run", "audits:read",
-            "users:manage", "apikeys:manage",
+            "audits:run",
+            "audits:read",
+            "users:manage",
+            "apikeys:manage",
         }
     ),
     Role.RESEARCHER: frozenset(
         {
             "read:any",
-            "strategies:create", "strategies:edit",
-            "backtests:run", "backtests:read",
+            "strategies:create",
+            "strategies:edit",
+            "backtests:run",
+            "backtests:read",
             "alerts:manage",
-            "audits:run", "audits:read",
+            "audits:run",
+            "audits:read",
             "apikeys:manage:self",
         }
     ),
@@ -75,7 +85,7 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 def create_access_token(*, subject: str, role: Role, extra: dict[str, Any] | None = None) -> str:
     settings = get_settings()
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     payload: dict[str, Any] = {
         "sub": subject,
         "role": role.value,
@@ -90,7 +100,7 @@ def create_access_token(*, subject: str, role: Role, extra: dict[str, Any] | Non
 
 def create_refresh_token(*, subject: str) -> str:
     settings = get_settings()
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     payload = {
         "sub": subject,
         "iat": int(now.timestamp()),
@@ -132,7 +142,13 @@ def constant_time_eq(a: str, b: str) -> bool:
 class CurrentUser:
     """Lightweight auth principal placed on the request state."""
 
-    def __init__(self, user_id: str, role: Role, source: str, scopes: frozenset[str] | None = None):
+    def __init__(
+        self,
+        user_id: str,
+        role: Role,
+        source: str,
+        scopes: frozenset[str] | None = None,
+    ):
         self.user_id = user_id
         self.role = role
         self.source = source

@@ -1,4 +1,5 @@
 """Tiny, dependency-free helpers used across services."""
+
 from __future__ import annotations
 
 import asyncio
@@ -8,9 +9,10 @@ import math
 import re
 import time
 import uuid
+from collections.abc import Awaitable, Callable, Iterable, Iterator
 from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation
-from typing import Any, Awaitable, Callable, Iterable, Iterator, TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 R = TypeVar("R")

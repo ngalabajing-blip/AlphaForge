@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import typer
 from rich.console import Console
@@ -23,7 +23,7 @@ def run(
     slippage_bps: int = typer.Option(5),
 ) -> None:
     """Enqueue a backtest."""
-    end = datetime.now(tz=timezone.utc).replace(microsecond=0)
+    end = datetime.now(tz=UTC).replace(microsecond=0)
     start = end - timedelta(days=days)
     payload = {
         "strategy_id": strategy_id,
@@ -46,7 +46,16 @@ def list_backtests(strategy_id: str = typer.Option(None)) -> None:
     with APIClient() as client:
         page = client.get("/api/v1/backtests", params=params)
     table = Table(title="Backtests")
-    for col in ("ID", "Strategy", "Version", "Status", "PnL %", "Sharpe", "MaxDD", "Trades"):
+    for col in (
+        "ID",
+        "Strategy",
+        "Version",
+        "Status",
+        "PnL %",
+        "Sharpe",
+        "MaxDD",
+        "Trades",
+    ):
         table.add_column(col)
     for item in page.get("items", []):
         table.add_row(

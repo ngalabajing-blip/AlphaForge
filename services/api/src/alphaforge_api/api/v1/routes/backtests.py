@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from alphaforge_api.core.database import get_session
-from alphaforge_api.core.security import CurrentUser, get_current_user, require_permission
+from alphaforge_api.core.security import (
+    CurrentUser,
+    get_current_user,
+    require_permission,
+)
 from alphaforge_api.repositories.backtest import BacktestRepository
 from alphaforge_api.schemas.backtest import BacktestCreate, BacktestOut, BacktestSummary
 from alphaforge_api.schemas.common import Page, PageMeta
@@ -36,13 +40,20 @@ async def list_backtests(
     repo = BacktestRepository(session)
     total = await repo.count(strategy_id=strategy_id, status=status_)
     items = await repo.list(
-        strategy_id=strategy_id, status=status_,
-        limit=size, offset=(page - 1) * size,
+        strategy_id=strategy_id,
+        status=status_,
+        limit=size,
+        offset=(page - 1) * size,
     )
     return Page(
         items=[BacktestSummary.model_validate(b) for b in items],
-        meta=PageMeta(total=total, page=page, size=size,
-                      has_next=page * size < total, has_prev=page > 1),
+        meta=PageMeta(
+            total=total,
+            page=page,
+            size=size,
+            has_next=page * size < total,
+            has_prev=page > 1,
+        ),
     )
 
 

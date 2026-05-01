@@ -12,19 +12,19 @@ Given a backtest_id this runner:
 For dev environments without a populated time-series store, we use the
 synthetic :class:`CandleProvider`.
 """
+
 from __future__ import annotations
 
 import asyncio
-import os
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-
 from alphaforge_shared.logging import get_logger
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
 from alphaforge_worker.config import get_settings
 from alphaforge_worker.dsl.evaluator import EvalContext, StrategyEvaluator
 from alphaforge_worker.dsl.parser import parse_strategy
@@ -62,10 +62,12 @@ class BacktestRunner:
 
     async def _load_backtest(self, session: AsyncSession, backtest_id: str):  # type: ignore[no-untyped-def]
         from alphaforge_api.models.backtest import Backtest
+
         return await session.get(Backtest, backtest_id)
 
     async def _load_strategy(self, session: AsyncSession, bt):  # type: ignore[no-untyped-def]
         from alphaforge_api.models.strategy import StrategyVersion
+
         stmt = select(StrategyVersion).where(
             StrategyVersion.strategy_id == bt.strategy_id,
             StrategyVersion.version == bt.strategy_version,
@@ -143,7 +145,13 @@ class BacktestRunner:
                     indicators=indicator_values,
                     indicators_history=indicator_history,
                     ohlcv=[candle],
-                    state={"position": float(portfolio.positions.get(sym).quantity) if portfolio.positions.get(sym) else 0.0},
+                    state={
+                        "position": (
+                            float(portfolio.positions.get(sym).quantity)
+                            if portfolio.positions.get(sym)
+                            else 0.0
+                        )
+                    },
                     parameters=dict(bt.parameters or {}),
                     last_close=float(candle["close"]),
                 )
@@ -189,8 +197,15 @@ class BacktestRunner:
             qty = self._size_to_qty(outcome.size, portfolio, price)
             if qty <= 0:
                 return None
-            decision = risk.check(ts=ts, symbol=symbol, side="buy", price=price,
-                                  quantity=qty, portfolio=portfolio, marks=marks)
+            decision = risk.check(
+                ts=ts,
+                symbol=symbol,
+                side="buy",
+                price=price,
+                quantity=qty,
+                portfolio=portfolio,
+                marks=marks,
+            )
             if not decision.allowed:
                 return None
             if decision.adjusted_quantity is not None:
@@ -224,8 +239,8 @@ class BacktestRunner:
         return size_dec  # absolute quantity
 
     async def _persist(self, session: AsyncSession, bt, metrics, events, portfolio) -> None:  # type: ignore[no-untyped-def]
-        from alphaforge_api.models.backtest import BacktestTrade
         from alphaforge_api.repositories.backtest import BacktestRepository
+
         repo = BacktestRepository(session)
         for fill in portfolio.fills:
             await repo.add_trade(
@@ -251,14 +266,18 @@ class BacktestRunner:
             win_rate=metrics.win_rate,
             trades_count=metrics.trades_count,
             metrics=metrics.metrics,
-            completed_at=datetime.now(tz=timezone.utc),
+            completed_at=datetime.now(tz=UTC),
         )
         await session.commit()
 
 
 def _fill_to_dict(fill) -> dict:  # type: ignore[no-untyped-def]
     return {
-        "symbol": fill.symbol, "side": fill.side, "price": str(fill.price),
-        "quantity": str(fill.quantity), "fee": str(fill.fee), "pnl": str(fill.pnl),
+        "symbol": fill.symbol,
+        "side": fill.side,
+        "price": str(fill.price),
+        "quantity": str(fill.quantity),
+        "fee": str(fill.fee),
+        "pnl": str(fill.pnl),
         "ts": fill.ts.isoformat() if hasattr(fill.ts, "isoformat") else str(fill.ts),
     }

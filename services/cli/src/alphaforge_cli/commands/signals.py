@@ -16,6 +16,7 @@ console = Console()
 def stream() -> None:
     """Subscribe to live signals over WebSocket."""
     import asyncio
+
     asyncio.run(_stream())
 
 
@@ -43,6 +44,7 @@ async def _stream() -> None:
 def recent(strategy_id: str = typer.Option(None), limit: int = typer.Option(50)) -> None:
     """Show the most recent signals."""
     from alphaforge_cli.client import APIClient
+
     params: dict = {"limit": limit}
     if strategy_id:
         params["strategy_id"] = strategy_id

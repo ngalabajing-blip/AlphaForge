@@ -1,12 +1,14 @@
 """Dispatcher — picks the right channel(s) for each alert and fan-outs."""
+
 from __future__ import annotations
 
 import asyncio
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import httpx
+from alphaforge_shared.logging import get_logger
 
 from alphaforge_notifier.channels.base import Channel, DeliveryResult
 from alphaforge_notifier.channels.discord import DiscordChannel
@@ -17,7 +19,6 @@ from alphaforge_notifier.channels.telegram import TelegramChannel
 from alphaforge_notifier.channels.webhook import WebhookChannel
 from alphaforge_notifier.config import get_settings
 from alphaforge_notifier.templates import render_template
-from alphaforge_shared.logging import get_logger
 
 log = get_logger("alphaforge_notifier.dispatcher")
 
@@ -69,7 +70,9 @@ class NotifierDispatcher:
                 results.append(coro)
         return results
 
-    async def _send_one(self, channel_name: str, alert: dict[str, Any], rendered: dict[str, str]) -> DeliveryResult:
+    async def _send_one(
+        self, channel_name: str, alert: dict[str, Any], rendered: dict[str, str]
+    ) -> DeliveryResult:
         channel = self._channels.get(channel_name)
         if channel is None:
             return DeliveryResult(channel=channel_name, success=False, error="unknown_channel")
@@ -84,7 +87,7 @@ class NotifierDispatcher:
         return f"{alert.get('alert_id')}:{alert.get('rule_type')}:{alert.get('symbol')}:{alert.get('payload', {}).get('digest', '')}"
 
     def _is_duplicate(self, key: str) -> bool:
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         ttl = timedelta(seconds=get_settings().dedupe_window_seconds)
         last = self._dedup.get(key)
         self._dedup[key] = now
@@ -95,7 +98,7 @@ class NotifierDispatcher:
     def _consume_rate_token(self, alert: dict[str, Any]) -> bool:
         owner = str(alert.get("owner_id") or "global")
         bucket = self._rate_buckets[owner]
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         cutoff = now - timedelta(minutes=1)
         # purge old
         self._rate_buckets[owner] = [t for t in bucket if t > cutoff]

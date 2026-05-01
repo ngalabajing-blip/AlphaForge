@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,31 +19,38 @@ class AuditRepository:
         await self.session.flush()
         return job
 
-    async def get(self, audit_id: str) -> Optional[AuditJob]:
+    async def get(self, audit_id: str) -> AuditJob | None:
         return await self.session.get(AuditJob, audit_id)
 
-    async def list(self, *, limit: int = 50, offset: int = 0,
-                   address: Optional[str] = None) -> list[AuditJob]:
+    async def list(self, *, limit: int = 50, offset: int = 0, address: str | None = None) -> list[AuditJob]:
         stmt = select(AuditJob)
         if address:
             stmt = stmt.where(AuditJob.address == address.lower())
         stmt = stmt.order_by(AuditJob.created_at.desc()).limit(limit).offset(offset)
         return list((await self.session.execute(stmt)).scalars().all())
 
-    async def update_status(self, job: AuditJob, status: str, *, error: Optional[str] = None) -> AuditJob:
+    async def update_status(self, job: AuditJob, status: str, *, error: str | None = None) -> AuditJob:
         job.status = status
         if status == "running" and job.started_at is None:
-            job.started_at = datetime.now(tz=timezone.utc)
+            job.started_at = datetime.now(tz=UTC)
         if status in ("completed", "failed"):
-            job.completed_at = datetime.now(tz=timezone.utc)
+            job.completed_at = datetime.now(tz=UTC)
         if error:
             job.error = error
         await self.session.flush()
         return job
 
-    async def finalize(self, job: AuditJob, *, risk_score: float, risk_level: str,
-                       summary: str, findings: list[dict], bytecode_size: int,
-                       has_source: bool) -> AuditJob:
+    async def finalize(
+        self,
+        job: AuditJob,
+        *,
+        risk_score: float,
+        risk_level: str,
+        summary: str,
+        findings: list[dict],
+        bytecode_size: int,
+        has_source: bool,
+    ) -> AuditJob:
         job.risk_score = risk_score  # type: ignore[assignment]
         job.risk_level = risk_level
         job.summary = summary
@@ -51,6 +58,6 @@ class AuditRepository:
         job.bytecode_size = bytecode_size
         job.has_source = has_source
         job.status = "completed"
-        job.completed_at = datetime.now(tz=timezone.utc)
+        job.completed_at = datetime.now(tz=UTC)
         await self.session.flush()
         return job

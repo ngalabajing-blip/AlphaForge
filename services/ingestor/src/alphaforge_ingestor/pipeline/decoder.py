@@ -5,10 +5,10 @@ The decoder maps topic[0] keccak hashes of well-known event signatures to
 human readable names + decoded args. We intentionally stay small here — full
 ABI decoding lives in the worker.
 """
+
 from __future__ import annotations
 
 from typing import Any
-
 
 # keccak256 of canonical event signatures (precomputed)
 EVENT_SIGNATURES: dict[str, str] = {

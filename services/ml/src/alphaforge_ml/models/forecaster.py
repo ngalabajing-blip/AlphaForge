@@ -10,18 +10,19 @@ Two backends:
 
 Both expose ``fit(X, y)`` / ``predict(X) -> (mu, sigma)``.
 """
+
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 
 @dataclass
 class Forecast:
     horizon_seconds: int
     predicted_close: float
-    direction: str   # "up" | "down" | "flat"
+    direction: str  # "up" | "down" | "flat"
     confidence: float
     explanation: list[str]
 
@@ -32,6 +33,7 @@ class RandomForestForecaster:
         self._available = False
         try:
             from sklearn.ensemble import RandomForestRegressor  # type: ignore[import-not-found]
+
             self.model = RandomForestRegressor(n_estimators=200, random_state=42, n_jobs=-1)
             self._available = True
         except ImportError:
@@ -76,6 +78,7 @@ class LSTMForecaster:
         self._available = False
         try:
             import torch  # type: ignore[import-not-found]
+
             self._torch = torch
             self._available = True
         except ImportError:

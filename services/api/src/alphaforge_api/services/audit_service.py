@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import uuid
-
+from alphaforge_shared.events import AuditRequest
+from alphaforge_shared.topics import T_AUDIT_REQUESTED
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from alphaforge_api.repositories.audit import AuditRepository
-from alphaforge_shared.events import AuditRequest
-from alphaforge_shared.topics import T_AUDIT_REQUESTED
 
 
 class AuditService:
@@ -24,6 +22,7 @@ class AuditService:
         # publish to kafka topic — auditor service consumes it
         try:
             from alphaforge_api.core.kafka_client import kafka_producer
+
             await kafka_producer.producer.publish(
                 T_AUDIT_REQUESTED,
                 AuditRequest(

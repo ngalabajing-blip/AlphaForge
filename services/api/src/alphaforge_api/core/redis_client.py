@@ -1,10 +1,12 @@
 """Redis async client wrapper."""
+
 from __future__ import annotations
 
 from typing import Any
 
-from alphaforge_api.core.config import get_settings
 from alphaforge_shared.logging import get_logger
+
+from alphaforge_api.core.config import get_settings
 
 log = get_logger("alphaforge_api.redis")
 

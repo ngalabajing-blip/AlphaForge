@@ -9,14 +9,14 @@ describe("<Badge />", () => {
     expect(screen.getByText("completed")).toBeDefined();
   });
 
-  it("applies a variant class", () => {
-    render(<Badge variant="success">ok</Badge>);
+  it("applies a bullish tone class", () => {
+    render(<Badge tone="bullish">ok</Badge>);
     const el = screen.getByText("ok");
     expect(el.className).toMatch(/emerald|green/);
   });
 
-  it("renders critical severity badge", () => {
-    render(<Badge variant="critical">danger</Badge>);
+  it("renders a bearish tone badge", () => {
+    render(<Badge tone="bearish">danger</Badge>);
     const el = screen.getByText("danger");
     expect(el.className).toMatch(/rose|red/);
   });

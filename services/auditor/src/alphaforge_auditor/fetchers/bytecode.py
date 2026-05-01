@@ -1,7 +1,8 @@
 """Fetch raw bytecode via JSON-RPC."""
+
 from __future__ import annotations
 
-from alphaforge_shared.chains import CHAINS, ChainSpec
+from alphaforge_shared.chains import CHAINS
 
 
 class BytecodeFetcher:
@@ -13,12 +14,15 @@ class BytecodeFetcher:
         if spec is None or not spec.rpc_url:
             return None
         try:
-            r = await self._http.post(spec.rpc_url, json={
-                "jsonrpc": "2.0",
-                "method": "eth_getCode",
-                "params": [address, "latest"],
-                "id": 1,
-            })
+            r = await self._http.post(
+                spec.rpc_url,
+                json={
+                    "jsonrpc": "2.0",
+                    "method": "eth_getCode",
+                    "params": [address, "latest"],
+                    "id": 1,
+                },
+            )
             r.raise_for_status()
             data = r.json()
             code = (data.get("result") or "0x").removeprefix("0x")

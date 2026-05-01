@@ -1,10 +1,12 @@
 """Base interface for per-chain ingestion adapters."""
+
 from __future__ import annotations
 
 import abc
 
-from alphaforge_ingestor.kafka_sink import KafkaSink
 from alphaforge_shared.chains import ChainSpec
+
+from alphaforge_ingestor.kafka_sink import KafkaSink
 
 
 class ChainAdapter(abc.ABC):

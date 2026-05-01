@@ -1,4 +1,5 @@
 """Shared exception hierarchy used across all AlphaForge services."""
+
 from __future__ import annotations
 
 

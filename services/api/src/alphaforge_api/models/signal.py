@@ -3,7 +3,6 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -22,10 +21,8 @@ class Signal(Base, TimestampMixin):
     symbol: Mapped[str] = mapped_column(String(32), nullable=False)
     action: Mapped[str] = mapped_column(String(16), nullable=False)
     strength: Mapped[Decimal] = mapped_column(Numeric(6, 4), nullable=False)
-    suggested_size: Mapped[Optional[Decimal]] = mapped_column(Numeric(28, 8))
+    suggested_size: Mapped[Decimal | None] = mapped_column(Numeric(28, 8))
     indicators: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
     reasons: Mapped[list[str]] = mapped_column(JSONB, default=list, nullable=False)
 
-    __table_args__ = (
-        Index("ix_signals_symbol_emitted_at", "symbol", "emitted_at"),
-    )
+    __table_args__ = (Index("ix_signals_symbol_emitted_at", "symbol", "emitted_at"),)

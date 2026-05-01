@@ -1,15 +1,7 @@
 from __future__ import annotations
 
 import pytest
-
-from alphaforge_api.services.dsl_loader import (
-    DSLValidationError,
-    SOURCE_FORMAT_YAML,
-    detect_format,
-    load_strategy_source,
-    summarise_indicators,
-)
-
+from alphaforge_api.services.dsl_loader import loads
 
 VALID_YAML = """\
 strategy: "test"
@@ -23,31 +15,38 @@ rules:
 """
 
 
-def test_detect_yaml_format() -> None:
-    assert detect_format(VALID_YAML) == SOURCE_FORMAT_YAML
-
-
-def test_load_valid_strategy_source() -> None:
-    parsed = load_strategy_source(VALID_YAML)
+def test_loads_valid_strategy() -> None:
+    parsed = loads(VALID_YAML)
     assert parsed["strategy"] == "test"
     assert len(parsed["indicators"]) == 2
     assert parsed["rules"][0]["then"] == "buy"
+    # _normalise should add defaults
+    assert "parameters" in parsed
+    assert "risk" in parsed
 
 
-def test_load_invalid_yaml_raises() -> None:
-    with pytest.raises(DSLValidationError):
-        load_strategy_source("this is not: yaml: at all: : :")
+def test_loads_json_format() -> None:
+    parsed = loads("""{"strategy":"j","universe":{"symbols":["ETH/USDT"],"timeframe":"1h"},
+            "rules":[{"when":"cross_up(a,b)","then":"buy"}]}""")
+    assert parsed["strategy"] == "j"
+    assert parsed["rules"][0]["then"] == "buy"
 
 
-def test_load_missing_required_field() -> None:
-    bad = "indicators: []\nrules: []\n"  # no strategy/universe
-    with pytest.raises(DSLValidationError):
-        load_strategy_source(bad)
+def test_empty_raises() -> None:
+    with pytest.raises(ValueError):
+        loads("")
 
 
-def test_summarise_indicators_returns_aliases() -> None:
-    parsed = load_strategy_source(VALID_YAML)
-    summary = summarise_indicators(parsed["indicators"])
-    assert "fast" in summary
-    assert "slow" in summary
-    assert summary["fast"]["name"] == "ema"
+def test_missing_rules_raises() -> None:
+    with pytest.raises(ValueError):
+        loads("strategy: x\nuniverse: { symbols: [ETH/USDT], timeframe: 1h }\nrules: []\n")
+
+
+def test_missing_required_field() -> None:
+    with pytest.raises(ValueError):
+        loads("indicators: []\nrules:\n  - {when: a, then: buy}\n")
+
+
+def test_invalid_top_level_scalar() -> None:
+    with pytest.raises(ValueError):
+        loads('"just a string"')

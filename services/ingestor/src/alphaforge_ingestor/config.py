@@ -3,14 +3,22 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 
-from pydantic import Field
-
 from alphaforge_shared.settings import CommonSettings
+from pydantic import Field
 
 
 class IngestorSettings(CommonSettings):
     enabled_chains: list[str] = Field(
-        default_factory=lambda: ["eth", "bsc", "polygon", "arbitrum", "base", "optimism", "avalanche", "sol"],
+        default_factory=lambda: [
+            "eth",
+            "bsc",
+            "polygon",
+            "arbitrum",
+            "base",
+            "optimism",
+            "avalanche",
+            "sol",
+        ],
         alias="INGESTOR_ENABLED_CHAINS",
     )
     poll_interval_seconds: float = Field(2.0, alias="INGESTOR_POLL_INTERVAL")

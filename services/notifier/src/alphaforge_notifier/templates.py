@@ -1,4 +1,5 @@
 """Template rendering for alert payloads."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -23,7 +24,12 @@ def render_template(alert: dict[str, Any]) -> dict[str, str]:
         title=title, symbol=symbol, severity=severity, message=message, details=details
     )
     body_md = _to_markdown(title, symbol, severity, message, details)
-    return {"title": title, "text": body_text, "markdown": body_md, "severity": severity}
+    return {
+        "title": title,
+        "text": body_text,
+        "markdown": body_md,
+        "severity": severity,
+    }
 
 
 def _render_details(payload: dict) -> str:

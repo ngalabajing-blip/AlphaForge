@@ -4,12 +4,14 @@ Unified structured logging.
 Every service should call :func:`configure_logging` once at startup. Log lines
 are emitted as JSON in production and as a friendly key/value layout in dev.
 """
+
 from __future__ import annotations
 
 import logging
 import os
 import sys
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 import structlog
 from structlog.types import EventDict, Processor

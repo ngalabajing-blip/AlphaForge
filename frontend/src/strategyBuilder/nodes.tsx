@@ -12,6 +12,7 @@ const styles: Record<string, string> = {
   constant: "border-slate-700/40 bg-slate-900/20",
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 const AlphaNode = ({ data, selected }: NodeProps<BuilderNodeData>) => (
   <div
     className={clsx(

@@ -1,4 +1,5 @@
 """Generic HTTP webhook delivery (with HMAC signing)."""
+
 from __future__ import annotations
 
 import hashlib

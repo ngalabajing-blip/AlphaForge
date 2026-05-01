@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 
-import api from "@/lib/api";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";

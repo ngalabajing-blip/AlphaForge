@@ -1,4 +1,5 @@
 """Slack incoming webhook delivery."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -19,13 +20,25 @@ class SlackChannel(Channel):
         if not url:
             return DeliveryResult(self.name, False, error="missing_webhook")
         try:
-            r = await self._http.post(url, json={
-                "text": rendered["title"],
-                "blocks": [
-                    {"type": "header", "text": {"type": "plain_text", "text": rendered["title"]}},
-                    {"type": "section", "text": {"type": "mrkdwn", "text": rendered["markdown"][:2900]}},
-                ],
-            })
+            r = await self._http.post(
+                url,
+                json={
+                    "text": rendered["title"],
+                    "blocks": [
+                        {
+                            "type": "header",
+                            "text": {"type": "plain_text", "text": rendered["title"]},
+                        },
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": rendered["markdown"][:2900],
+                            },
+                        },
+                    ],
+                },
+            )
             r.raise_for_status()
             return DeliveryResult(self.name, True)
         except Exception as exc:  # noqa: BLE001

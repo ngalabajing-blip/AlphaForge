@@ -1,10 +1,10 @@
 """Volume / volatility / channel indicators."""
+
 from __future__ import annotations
 
 from collections import deque
-from typing import Any, Deque
 
-from alphaforge_worker.indicators.basic import ATR, EMA, SMA
+from alphaforge_worker.indicators.basic import ATR, EMA
 from alphaforge_worker.indicators.registry import Indicator, register_indicator
 
 
@@ -55,8 +55,8 @@ class VWAP(Indicator):
 class Aroon(Indicator):
     def __init__(self, period: int = 25) -> None:
         self.period = period
-        self._highs: Deque[float] = deque(maxlen=period)
-        self._lows: Deque[float] = deque(maxlen=period)
+        self._highs: deque[float] = deque(maxlen=period)
+        self._lows: deque[float] = deque(maxlen=period)
         self._up: list[float] = []
         self._down: list[float] = []
 
@@ -89,8 +89,8 @@ class Aroon(Indicator):
 class ChaikinMoneyFlow(Indicator):
     def __init__(self, period: int = 20) -> None:
         self.period = period
-        self._mfv: Deque[float] = deque(maxlen=period)
-        self._volumes: Deque[float] = deque(maxlen=period)
+        self._mfv: deque[float] = deque(maxlen=period)
+        self._volumes: deque[float] = deque(maxlen=period)
         self._values: list[float] = []
 
     def update(self, candle: dict) -> float:
@@ -115,8 +115,8 @@ class ChaikinMoneyFlow(Indicator):
 class Donchian(Indicator):
     def __init__(self, period: int = 20) -> None:
         self.period = period
-        self._highs: Deque[float] = deque(maxlen=period)
-        self._lows: Deque[float] = deque(maxlen=period)
+        self._highs: deque[float] = deque(maxlen=period)
+        self._lows: deque[float] = deque(maxlen=period)
 
     def update(self, candle: dict) -> dict[str, float]:
         self._highs.append(float(candle["high"]))
@@ -143,8 +143,8 @@ class Ichimoku(Indicator):
         self.cd = conversion
         self.bd = base
         self.sd = span_b
-        self._highs: Deque[float] = deque(maxlen=max(conversion, base, span_b))
-        self._lows: Deque[float] = deque(maxlen=max(conversion, base, span_b))
+        self._highs: deque[float] = deque(maxlen=max(conversion, base, span_b))
+        self._lows: deque[float] = deque(maxlen=max(conversion, base, span_b))
 
     def _midband(self, period: int) -> float:
         if not self._highs or len(self._highs) < period:
@@ -207,7 +207,7 @@ class Supertrend(Indicator):
         self.mult = multiplier
         self._final_upper: float = 0.0
         self._final_lower: float = 0.0
-        self._direction: int = 1   # 1 long, -1 short
+        self._direction: int = 1  # 1 long, -1 short
         self._values: list[float] = []
         self._prev_close: float | None = None
 
@@ -223,8 +223,16 @@ class Supertrend(Indicator):
             self._final_lower = lower
             self._direction = 1 if c >= lower else -1
         else:
-            self._final_upper = upper if upper < self._final_upper or self._prev_close > self._final_upper else self._final_upper
-            self._final_lower = lower if lower > self._final_lower or self._prev_close < self._final_lower else self._final_lower
+            self._final_upper = (
+                upper
+                if upper < self._final_upper or self._prev_close > self._final_upper
+                else self._final_upper
+            )
+            self._final_lower = (
+                lower
+                if lower > self._final_lower or self._prev_close < self._final_lower
+                else self._final_lower
+            )
             if c > self._final_upper:
                 self._direction = 1
             elif c < self._final_lower:

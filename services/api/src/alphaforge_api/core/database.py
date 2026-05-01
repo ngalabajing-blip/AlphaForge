@@ -1,14 +1,20 @@
 """Async SQLAlchemy engine + session factory."""
+
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
+from alphaforge_shared.logging import get_logger
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from alphaforge_api.core.config import get_settings
-from alphaforge_shared.logging import get_logger
 
 log = get_logger("alphaforge_api.db")
 
@@ -42,9 +48,7 @@ class Database:
             pool_pre_ping=True,
             pool_recycle=300,
         )
-        self._sessionmaker = async_sessionmaker(
-            self._engine, expire_on_commit=False, autoflush=False
-        )
+        self._sessionmaker = async_sessionmaker(self._engine, expire_on_commit=False, autoflush=False)
 
     async def disconnect(self) -> None:
         if self._engine is not None:

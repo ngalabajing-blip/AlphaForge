@@ -11,20 +11,21 @@ Authentication: token can be supplied either as a ``token`` query param
 (``ws://…?token=…``) or via ``Authorization: Bearer …`` headers when the
 client supports them. Lack of auth produces a 1008 close on connect.
 """
+
 from __future__ import annotations
 
 import asyncio
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
+from alphaforge_shared.logging import get_logger
+from alphaforge_shared.symbols import parse_symbol
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect, status
 from jose import JWTError
 
 from alphaforge_api.core.security import decode_token
 from alphaforge_api.services.market_service import MarketService
-from alphaforge_shared.logging import get_logger
-from alphaforge_shared.symbols import parse_symbol
 
 router = APIRouter()
 log = get_logger("alphaforge_api.ws")
@@ -65,7 +66,7 @@ async def signals_socket(ws: WebSocket, token: str | None = Query(default=None))
                 ws,
                 {
                     "type": "heartbeat",
-                    "ts": datetime.now(tz=timezone.utc).isoformat(),
+                    "ts": datetime.now(tz=UTC).isoformat(),
                     "seq": i,
                 },
             )
@@ -120,7 +121,10 @@ async def audits_socket(ws: WebSocket, token: str | None = Query(default=None)) 
     await ws.accept()
     try:
         while True:
-            await _send_json(ws, {"type": "heartbeat", "ts": datetime.now(tz=timezone.utc).isoformat()})
+            await _send_json(
+                ws,
+                {"type": "heartbeat", "ts": datetime.now(tz=UTC).isoformat()},
+            )
             await asyncio.sleep(15)
     except WebSocketDisconnect:
         return

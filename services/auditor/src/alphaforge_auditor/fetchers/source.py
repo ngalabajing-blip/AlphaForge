@@ -1,4 +1,5 @@
 """Fetch verified source code from explorer APIs."""
+
 from __future__ import annotations
 
 from alphaforge_auditor.config import get_settings

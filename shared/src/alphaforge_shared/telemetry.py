@@ -1,17 +1,21 @@
 """
 OpenTelemetry helpers — graceful no-ops when otel libs are not installed.
 """
+
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 try:
     from opentelemetry import trace  # type: ignore[import-not-found]
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter  # type: ignore[import-not-found]
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+        OTLPSpanExporter,  # type: ignore[import-not-found]
+    )
     from opentelemetry.sdk.resources import Resource  # type: ignore[import-not-found]
     from opentelemetry.sdk.trace import TracerProvider  # type: ignore[import-not-found]
     from opentelemetry.sdk.trace.export import BatchSpanProcessor  # type: ignore[import-not-found]
+
     _OTEL_AVAILABLE = True
 except Exception:  # pragma: no cover
     _OTEL_AVAILABLE = False

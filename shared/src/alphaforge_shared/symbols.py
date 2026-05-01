@@ -1,11 +1,12 @@
 """
 Canonical token / market symbol parsing and registry helpers.
 """
+
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 _SYMBOL_RE = re.compile(r"^([A-Z0-9]{1,12})/([A-Z0-9]{1,12})$")
 
@@ -19,7 +20,7 @@ class MarketSymbol:
     def canonical(self) -> str:
         return f"{self.base}/{self.quote}"
 
-    def inverted(self) -> "MarketSymbol":
+    def inverted(self) -> MarketSymbol:
         return MarketSymbol(self.quote, self.base)
 
 
@@ -39,8 +40,27 @@ def parse_symbol(text: str) -> MarketSymbol:
 
 
 # Common stable / quote tokens used to score symbol popularity.
-STABLES: tuple[str, ...] = ("USDT", "USDC", "DAI", "BUSD", "FRAX", "USD", "TUSD", "PYUSD")
-MAJORS: tuple[str, ...] = ("BTC", "ETH", "SOL", "BNB", "MATIC", "AVAX", "OP", "ARB", "ATOM")
+STABLES: tuple[str, ...] = (
+    "USDT",
+    "USDC",
+    "DAI",
+    "BUSD",
+    "FRAX",
+    "USD",
+    "TUSD",
+    "PYUSD",
+)
+MAJORS: tuple[str, ...] = (
+    "BTC",
+    "ETH",
+    "SOL",
+    "BNB",
+    "MATIC",
+    "AVAX",
+    "OP",
+    "ARB",
+    "ATOM",
+)
 
 
 def is_stable(symbol: str) -> bool:

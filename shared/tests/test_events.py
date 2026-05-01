@@ -1,7 +1,6 @@
 from decimal import Decimal
 
 import pytest
-
 from alphaforge_shared.events import (
     AnomalyEvent,
     BlockEvent,
@@ -42,8 +41,14 @@ def test_transaction_event_decimal_coercion():
 
 
 def test_price_event_required_fields():
-    PriceEvent(producer="ingestor", source="coingecko", chain="eth", symbol="ETH",
-               address=None, price_usd=Decimal("3000"))
+    PriceEvent(
+        producer="ingestor",
+        source="coingecko",
+        chain="eth",
+        symbol="ETH",
+        address=None,
+        price_usd=Decimal("3000"),
+    )
 
 
 def test_signal_event_action_enum():
@@ -74,7 +79,13 @@ def test_anomaly_severity_enum():
 
 
 def test_event_envelope_immutable():
-    e = BlockEvent(producer="ingestor", chain="eth", height=1,
-                   block_hash="0xa", parent_hash="0xb", tx_count=0)
+    e = BlockEvent(
+        producer="ingestor",
+        chain="eth",
+        height=1,
+        block_hash="0xa",
+        parent_hash="0xb",
+        tx_count=0,
+    )
     with pytest.raises(Exception):
         e.height = 2  # type: ignore[misc]

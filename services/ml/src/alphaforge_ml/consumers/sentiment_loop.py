@@ -5,20 +5,21 @@ In production this consumes social-media webhook events; for dev we
 synthesise a stream of crypto-related comments and publish per-asset rolling
 sentiment.
 """
+
 from __future__ import annotations
 
 import asyncio
 import random
 from collections import defaultdict, deque
-from datetime import datetime, timezone
-from typing import Deque
+from datetime import UTC, datetime
 
-from alphaforge_ml.config import get_settings
-from alphaforge_ml.models.sentiment import get_sentiment_model
 from alphaforge_shared.events import SentimentEvent
 from alphaforge_shared.kafka import EventProducer
 from alphaforge_shared.logging import get_logger
 from alphaforge_shared.topics import T_SENTIMENT
+
+from alphaforge_ml.config import get_settings
+from alphaforge_ml.models.sentiment import get_sentiment_model
 
 log = get_logger("alphaforge_ml.sentiment")
 
@@ -40,7 +41,7 @@ SYMBOLS = ["BTC", "ETH", "SOL", "BNB", "ARB"]
 async def run_sentiment_loop(stop: asyncio.Event) -> None:
     settings = get_settings()
     model = get_sentiment_model(settings.sentiment_backend)
-    rolling: dict[str, Deque[float]] = defaultdict(lambda: deque(maxlen=64))
+    rolling: dict[str, deque[float]] = defaultdict(lambda: deque(maxlen=64))
 
     producer: EventProducer | None = None
     try:
@@ -67,7 +68,7 @@ async def run_sentiment_loop(stop: asyncio.Event) -> None:
                 confidence=result.confidence,
                 source="synthetic",
                 sample_size=len(rolling[symbol]),
-                ts=datetime.now(tz=timezone.utc),
+                ts=datetime.now(tz=UTC),
             )
             if producer is not None:
                 try:
@@ -76,7 +77,7 @@ async def run_sentiment_loop(stop: asyncio.Event) -> None:
                     pass
             try:
                 await asyncio.wait_for(stop.wait(), timeout=1.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 pass
     finally:
         if producer is not None:

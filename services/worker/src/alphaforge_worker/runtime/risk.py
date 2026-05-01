@@ -1,4 +1,5 @@
 """Risk manager — rejects orders that violate strategy / global risk limits."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
