@@ -1,0 +1,32 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: alphaforge-api
+  namespace: alphaforge
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: alphaforge-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: alphaforge-worker
+  namespace: alphaforge
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: alphaforge-worker
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: alphaforge-frontend
+  namespace: alphaforge
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: alphaforge-frontend

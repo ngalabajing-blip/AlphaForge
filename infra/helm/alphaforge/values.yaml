@@ -1,0 +1,82 @@
+global:
+  image:
+    registry: ghcr.io/alphaforge
+    pullPolicy: IfNotPresent
+    tag: latest
+  imagePullSecrets: []
+  env: production
+
+services:
+  api:
+    enabled: true
+    replicas: 2
+    resources:
+      requests: { cpu: "200m", memory: "256Mi" }
+      limits:   { cpu: "1",    memory: "1Gi"   }
+    autoscaling:
+      enabled: true
+      min: 2
+      max: 8
+      targetCPU: 70
+    ingress:
+      enabled: true
+      className: nginx
+      host: api.alphaforge.local
+  ingestor:
+    enabled: true
+    replicas: 1
+    resources:
+      requests: { cpu: "300m", memory: "512Mi" }
+      limits:   { cpu: "2",    memory: "1Gi"   }
+  ml:
+    enabled: true
+    replicas: 1
+    resources:
+      requests: { cpu: "500m", memory: "1Gi" }
+      limits:   { cpu: "2",    memory: "4Gi" }
+  worker:
+    enabled: true
+    replicas: 2
+    autoscaling:
+      enabled: true
+      min: 2
+      max: 16
+      targetCPU: 75
+  notifier:
+    enabled: true
+    replicas: 1
+  auditor:
+    enabled: true
+    replicas: 1
+  frontend:
+    enabled: true
+    replicas: 2
+    ingress:
+      enabled: true
+      host: app.alphaforge.local
+
+dependencies:
+  postgres:
+    enabled: true
+    size: 20Gi
+  redis:
+    enabled: true
+  kafka:
+    enabled: true
+    size: 20Gi
+  clickhouse:
+    enabled: true
+    size: 50Gi
+
+config:
+  appLogLevel: INFO
+  databaseUrl: postgresql+asyncpg://alphaforge:alphaforge@postgres:5432/alphaforge
+  redisUrl: redis://redis:6379/0
+  kafkaBootstrap: kafka:9092
+  clickhouseUrl: clickhouse-server:9000
+
+secrets:
+  jwtSecretKey: change-me
+  etherscanApiKey: ""
+  bscscanApiKey: ""
+  polygonscanApiKey: ""

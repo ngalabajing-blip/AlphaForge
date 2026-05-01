@@ -1,0 +1,204 @@
+version: "3.9"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# AlphaForge — production-shaped compose stack.
+# ──────────────────────────────────────────────────────────────────────────────
+
+x-default-env: &default-env
+  env_file:
+    - .env
+
+services:
+  # ── Datastores ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: af-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-alphaforge}
+      POSTGRES_USER: ${POSTGRES_USER:-alphaforge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-alphaforge_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-alphaforge}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3-alpine
+    container_name: af-clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - chdata:/var/lib/clickhouse
+      - ./scripts/clickhouse-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ulimits:
+      nofile: 262144
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: af-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: af-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: af-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    restart: unless-stopped
+
+  # ── Application services ────────────────────────────────────────────────────
+  api:
+    <<: *default-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: af-api
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+      kafka:    { condition: service_started }
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  ingestor:
+    <<: *default-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ingestor
+    container_name: af-ingestor
+    depends_on:
+      kafka: { condition: service_started }
+    restart: unless-stopped
+
+  worker:
+    <<: *default-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    container_name: af-worker
+    depends_on:
+      redis:    { condition: service_healthy }
+      postgres: { condition: service_healthy }
+      kafka:    { condition: service_started }
+    restart: unless-stopped
+
+  ml:
+    <<: *default-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ml
+    container_name: af-ml
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+
+  auditor:
+    <<: *default-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.auditor
+    container_name: af-auditor
+    ports:
+      - "8002:8002"
+    restart: unless-stopped
+
+  notifier:
+    <<: *default-env
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.notifier
+    container_name: af-notifier
+    depends_on:
+      kafka: { condition: service_started }
+    ports:
+      - "8003:8003"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    container_name: af-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # ── Observability ───────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: af-prometheus
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: af-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafanadata:/var/lib/grafana
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.104.0
+    container_name: af-otel
+    command: ["--config=/etc/otel-collector.yaml"]
+    volumes:
+      - ./infra/otel-collector.yaml:/etc/otel-collector.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  chdata:
+  redisdata:
+  grafanadata:

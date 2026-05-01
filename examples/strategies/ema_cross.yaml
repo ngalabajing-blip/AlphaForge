@@ -1,0 +1,33 @@
+strategy: "EMA cross + RSI filter"
+description: |
+  Classic EMA(12)/EMA(26) crossover, gated by an RSI filter so we don't
+  buy in clearly overbought conditions. Closes on either a bearish
+  cross OR an extreme RSI reading.
+universe:
+  symbols: [ETH/USDT, BTC/USDT, SOL/USDT]
+  timeframe: 1h
+parameters:
+  fast_period: 12
+  slow_period: 26
+  rsi_period: 14
+  rsi_long_max: 70
+  rsi_long_exit: 80
+  position_size: 0.2
+indicators:
+  - {name: ema, alias: fast,  period: param("fast_period")}
+  - {name: ema, alias: slow,  period: param("slow_period")}
+  - {name: rsi, alias: rsi14, period: param("rsi_period")}
+  - {name: atr, alias: atr14, period: 14}
+rules:
+  - when: cross_up(fast, slow) and rsi14 < param("rsi_long_max")
+    then: buy
+    size: param("position_size")
+    stop_loss: atr14 * 2
+    take_profit: atr14 * 4
+  - when: cross_down(fast, slow) or rsi14 > param("rsi_long_exit")
+    then: close
+risk:
+  max_drawdown: 0.20
+  max_concurrent_positions: 5
+  per_trade_stop_loss_pct: 0.05
+  per_trade_take_profit_pct: 0.15

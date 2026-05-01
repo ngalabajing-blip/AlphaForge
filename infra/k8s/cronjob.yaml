@@ -1,0 +1,51 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: alphaforge-rebuild-anomaly-model
+  namespace: alphaforge
+spec:
+  schedule: "30 2 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: train
+              image: ghcr.io/alphaforge/worker:latest
+              command:
+                - python
+                - -c
+                - |
+                  from alphaforge_worker.tasks.train import train_anomaly_model
+                  train_anomaly_model.delay()
+              envFrom:
+                - configMapRef: { name: alphaforge-config }
+                - secretRef:    { name: alphaforge-secrets }
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: alphaforge-cleanup-stale-jobs
+  namespace: alphaforge
+spec:
+  schedule: "*/15 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: cleanup
+              image: ghcr.io/alphaforge/worker:latest
+              command:
+                - python
+                - -c
+                - |
+                  from alphaforge_worker.tasks.maintenance import sweep_stale
+                  sweep_stale.delay()
+              envFrom:
+                - configMapRef: { name: alphaforge-config }
+                - secretRef:    { name: alphaforge-secrets }

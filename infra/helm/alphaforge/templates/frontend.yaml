@@ -1,0 +1,48 @@
+{{- if .Values.services.frontend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "alphaforge.fullname" . }}-frontend
+spec:
+  replicas: {{ .Values.services.frontend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "alphaforge.fullname" . }}-frontend
+  template:
+    metadata:
+      labels:
+        app: {{ include "alphaforge.fullname" . }}-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: {{ include "alphaforge.image" (dict "name" "frontend" "tag" "" "Values" .Values) }}
+          ports: [{ containerPort: 80 }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "alphaforge.fullname" . }}-frontend
+spec:
+  selector:
+    app: {{ include "alphaforge.fullname" . }}-frontend
+  ports: [{ port: 80, targetPort: 80 }]
+{{- if .Values.services.frontend.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "alphaforge.fullname" . }}-frontend
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.services.frontend.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "alphaforge.fullname" . }}-frontend
+                port: { number: 80 }
+{{- end }}
+{{- end }}

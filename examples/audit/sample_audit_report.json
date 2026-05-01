@@ -1,0 +1,27 @@
+{
+  "job_id": "44444444-4444-4444-4444-444444444441",
+  "chain": "eth",
+  "address": "0xababababababababababababababababababab",
+  "deep": true,
+  "status": "completed",
+  "risk_score": 78,
+  "risk_level": "high",
+  "summary": "Detected blacklist + delegatecall + onlyOwner. Source-level findings include selfdestruct and tx.origin auth.",
+  "metadata": {
+    "bytecode_size": 4824,
+    "source_loc": 53,
+    "explorer": "etherscan",
+    "compiler_version": "0.8.20"
+  },
+  "findings": [
+    { "category": "bytecode", "code": "SELFDESTRUCT", "severity": "critical", "description": "SELFDESTRUCT opcode present in deployed bytecode", "occurrences": 1 },
+    { "category": "bytecode", "code": "DELEGATECALL", "severity": "high", "description": "DELEGATECALL opcode used", "occurrences": 1 },
+    { "category": "source", "code": "SOL_BLACKLIST", "severity": "high", "description": "Blacklist add/remove functions present" },
+    { "category": "source", "code": "SOL_TX_ORIGIN", "severity": "high", "description": "tx.origin used for authorisation" },
+    { "category": "source", "code": "SOL_OWNER_BURN", "severity": "high", "description": "Owner can burn arbitrary balances" },
+    { "category": "source", "code": "SOL_DELEGATECALL", "severity": "high", "description": "delegatecall used in privileged function" },
+    { "category": "source", "code": "SOL_ONLYOWNER",   "severity": "info", "description": "onlyOwner modifier in use" },
+    { "category": "source", "code": "SOL_MINT_PUBLIC", "severity": "medium", "description": "Owner can mint additional supply" },
+    { "category": "source", "code": "SOL_FALLBACK_RECEIVE", "severity": "info", "description": "fallback() and receive() functions defined" }
+  ]
+}

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alphaforge-notifier
+  namespace: alphaforge
+  labels: { app: alphaforge-notifier }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: alphaforge-notifier } }
+  template:
+    metadata: { labels: { app: alphaforge-notifier } }
+    spec:
+      containers:
+        - name: notifier
+          image: ghcr.io/alphaforge/notifier:latest
+          envFrom:
+            - configMapRef: { name: alphaforge-config }
+            - secretRef:    { name: alphaforge-secrets }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }

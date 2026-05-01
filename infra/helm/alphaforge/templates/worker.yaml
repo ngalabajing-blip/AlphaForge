@@ -1,0 +1,23 @@
+{{- if .Values.services.worker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "alphaforge.fullname" . }}-worker
+spec:
+  replicas: {{ .Values.services.worker.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "alphaforge.fullname" . }}-worker
+  template:
+    metadata:
+      labels:
+        app: {{ include "alphaforge.fullname" . }}-worker
+    spec:
+      containers:
+        - name: worker
+          image: {{ include "alphaforge.image" (dict "name" "worker" "tag" "" "Values" .Values) }}
+          command: ["celery", "-A", "alphaforge_worker.celery_app:celery_app", "worker", "--loglevel=INFO"]
+          envFrom:
+            - configMapRef: { name: {{ include "alphaforge.fullname" . }}-config }
+            - secretRef:    { name: {{ include "alphaforge.fullname" . }}-secrets }
+{{- end }}

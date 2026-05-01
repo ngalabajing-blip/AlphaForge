@@ -1,0 +1,43 @@
+{
+  "title": "AlphaForge — Overview",
+  "uid": "alphaforge-overview",
+  "schemaVersion": 38,
+  "panels": [
+    {
+      "title": "API request rate",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "sum(rate(alphaforge_api_requests_total[1m]))", "legendFormat": "rps" }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "title": "API latency p95",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(alphaforge_api_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95" }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "title": "Backtests in flight",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "alphaforge_worker_backtests_active" }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 6, "h": 6 }
+    },
+    {
+      "title": "Anomaly score distribution",
+      "type": "heatmap",
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "rate(alphaforge_ml_anomaly_score_bucket[5m])" }
+      ],
+      "gridPos": { "x": 6, "y": 8, "w": 18, "h": 6 }
+    }
+  ]
+}

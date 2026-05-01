@@ -1,0 +1,28 @@
+strategy: "Anomaly + trend confirmation"
+description: |
+  Combine the ML anomaly signal with trend confirmation. If a strong
+  anomaly is detected on a coin AND the EMA stack is bullish, scale
+  in. Use ATR-based stop. Exits aggressively on either a counter-
+  trend cross or a fresh anomaly score below threshold.
+universe:
+  symbols: [ETH/USDT, BTC/USDT, SOL/USDT]
+  timeframe: 30m
+parameters:
+  anomaly_threshold: 0.85
+  position_size: 0.1
+indicators:
+  - {name: ema, alias: fast,  period: 12}
+  - {name: ema, alias: mid,   period: 26}
+  - {name: ema, alias: slow,  period: 100}
+  - {name: atr, alias: atr14, period: 14}
+rules:
+  - when: anomaly_score > param("anomaly_threshold") and fast > mid and mid > slow
+    then: buy
+    size: param("position_size")
+    stop_loss: atr14 * 2.5
+    take_profit: atr14 * 6
+  - when: cross_down(fast, mid) or anomaly_score < 0.4
+    then: close
+risk:
+  max_drawdown: 0.15
+  max_concurrent_positions: 3

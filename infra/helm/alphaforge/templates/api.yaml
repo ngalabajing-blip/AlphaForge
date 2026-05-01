@@ -1,0 +1,57 @@
+{{- if .Values.services.api.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "alphaforge.fullname" . }}-api
+spec:
+  replicas: {{ .Values.services.api.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "alphaforge.fullname" . }}-api
+  template:
+    metadata:
+      labels:
+        app: {{ include "alphaforge.fullname" . }}-api
+    spec:
+      containers:
+        - name: api
+          image: {{ include "alphaforge.image" (dict "name" "api" "tag" "" "Values" .Values) }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef: { name: {{ include "alphaforge.fullname" . }}-config }
+            - secretRef:    { name: {{ include "alphaforge.fullname" . }}-secrets }
+          resources:
+            {{- toYaml .Values.services.api.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "alphaforge.fullname" . }}-api
+spec:
+  selector:
+    app: {{ include "alphaforge.fullname" . }}-api
+  ports:
+    - port: 8000
+      targetPort: 8000
+{{- if .Values.services.api.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "alphaforge.fullname" . }}-api
+spec:
+  ingressClassName: {{ .Values.services.api.ingress.className }}
+  rules:
+    - host: {{ .Values.services.api.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "alphaforge.fullname" . }}-api
+                port: { number: 8000 }
+{{- end }}
+{{- end }}

@@ -1,0 +1,25 @@
+strategy: "Bollinger mean reversion"
+description: |
+  Buy oversold pulls below the lower Bollinger band when ADX is
+  weak (i.e., we're in a range), close on touch of the mid band.
+universe:
+  symbols: [ETH/USDT]
+  timeframe: 15m
+parameters:
+  bb_period: 20
+  bb_k: 2.0
+  adx_period: 14
+  adx_max: 20
+  position_size: 0.15
+indicators:
+  - {name: bollinger, alias: bb,   period: param("bb_period"), k: param("bb_k")}
+  - {name: adx,        alias: adx, period: param("adx_period")}
+rules:
+  - when: below(close, bb_lower) and adx < param("adx_max")
+    then: buy
+    size: param("position_size")
+  - when: above(close, bb_mid)
+    then: close
+risk:
+  max_drawdown: 0.15
+  max_concurrent_positions: 3

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alphaforge-ml
+  namespace: alphaforge
+  labels: { app: alphaforge-ml }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: alphaforge-ml } }
+  template:
+    metadata: { labels: { app: alphaforge-ml } }
+    spec:
+      containers:
+        - name: ml
+          image: ghcr.io/alphaforge/ml:latest
+          envFrom:
+            - configMapRef: { name: alphaforge-config }
+            - secretRef:    { name: alphaforge-secrets }
+          resources:
+            requests: { cpu: "500m", memory: "1Gi" }
+            limits:   { cpu: "2",    memory: "4Gi" }

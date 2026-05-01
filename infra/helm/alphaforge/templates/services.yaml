@@ -1,0 +1,26 @@
+{{- range $svc := list "ingestor" "ml" "notifier" "auditor" }}
+{{- $cfg := index $.Values.services $svc -}}
+{{- if $cfg.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "alphaforge.fullname" $ }}-{{ $svc }}
+spec:
+  replicas: {{ $cfg.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "alphaforge.fullname" $ }}-{{ $svc }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "alphaforge.fullname" $ }}-{{ $svc }}
+    spec:
+      containers:
+        - name: {{ $svc }}
+          image: {{ include "alphaforge.image" (dict "name" $svc "tag" "" "Values" $.Values) }}
+          envFrom:
+            - configMapRef: { name: {{ include "alphaforge.fullname" $ }}-config }
+            - secretRef:    { name: {{ include "alphaforge.fullname" $ }}-secrets }
+---
+{{- end }}
+{{- end }}

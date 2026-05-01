@@ -1,0 +1,189 @@
+{
+  "info": {
+    "name": "AlphaForge API",
+    "_postman_id": "alphaforge-collection",
+    "description": "Reference Postman collection covering every REST surface of the AlphaForge API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api/v1" },
+    { "key": "access_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "username", "value": "admin@alphaforge.local" },
+                { "key": "password", "value": "changeme" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/auth/token", "host": ["{{base_url}}"], "path": ["auth", "token"] }
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth", "refresh"] }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/users/me", "host": ["{{base_url}}"], "path": ["users", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Strategies",
+      "item": [
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/strategies", "host": ["{{base_url}}"], "path": ["strategies"] }
+          }
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo EMA cross\",\n  \"is_public\": false,\n  \"raw_source\": \"strategy: 'demo'\\nuniverse: { symbols: [ETH/USDT], timeframe: 1h }\\nindicators:\\n  - {name: ema, alias: fast, period: 12}\\n  - {name: ema, alias: slow, period: 26}\\nrules:\\n  - when: cross_up(fast, slow)\\n    then: buy\\n    size: 0.1\\n\",\n  \"parameters\": {}\n}"
+            },
+            "url": { "raw": "{{base_url}}/strategies", "host": ["{{base_url}}"], "path": ["strategies"] }
+          }
+        },
+        {
+          "name": "Show",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/strategies/:id", "host": ["{{base_url}}"], "path": ["strategies", ":id"] }
+          }
+        },
+        {
+          "name": "Publish version",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"raw_source\": \"strategy: 'demo v2' \\nuniverse: { symbols: [ETH/USDT], timeframe: 1h }\\nindicators: []\\nrules: []\\n\",\n  \"notes\": \"v2\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/strategies/:id/versions", "host": ["{{base_url}}"], "path": ["strategies", ":id", "versions"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Backtests",
+      "item": [
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/backtests?limit=20", "host": ["{{base_url}}"], "path": ["backtests"], "query": [{ "key": "limit", "value": "20" }] }
+          }
+        },
+        {
+          "name": "Run",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategy_id\": \"00000000-0000-0000-0000-000000000000\",\n  \"version\": 1,\n  \"days\": 30,\n  \"timeframe\": \"1h\",\n  \"initial_balance\": 10000,\n  \"fee_bps\": 5,\n  \"slippage_bps\": 5\n}"
+            },
+            "url": { "raw": "{{base_url}}/backtests", "host": ["{{base_url}}"], "path": ["backtests"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audits",
+      "item": [
+        {
+          "name": "Request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chain\": \"eth\",\n  \"address\": \"0x0000000000000000000000000000000000000000\",\n  \"deep\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/audits", "host": ["{{base_url}}"], "path": ["audits"] }
+          }
+        },
+        {
+          "name": "Show",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/audits/:job_id", "host": ["{{base_url}}"], "path": ["audits", ":job_id"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Market",
+      "item": [
+        { "name": "Ticker",
+          "request": { "method": "GET",
+            "url": { "raw": "{{base_url}}/market/ticker/ETH/USDT", "host": ["{{base_url}}"], "path": ["market", "ticker", "ETH/USDT"] } } },
+        { "name": "Candles",
+          "request": { "method": "GET",
+            "url": { "raw": "{{base_url}}/market/candles/ETH/USDT?timeframe=1h&limit=100", "host": ["{{base_url}}"], "path": ["market", "candles", "ETH/USDT"], "query": [{"key":"timeframe","value":"1h"},{"key":"limit","value":"100"}] } } },
+        { "name": "Dominance",
+          "request": { "method": "GET",
+            "url": { "raw": "{{base_url}}/market/dominance", "host": ["{{base_url}}"], "path": ["market", "dominance"] } } },
+        { "name": "Top movers",
+          "request": { "method": "GET",
+            "url": { "raw": "{{base_url}}/market/movers?n=10&direction=up", "host": ["{{base_url}}"], "path": ["market", "movers"], "query": [{"key":"n","value":"10"},{"key":"direction","value":"up"}] } } }
+      ]
+    },
+    {
+      "name": "Signals",
+      "item": [
+        { "name": "Recent",
+          "request": { "method": "GET",
+            "url": { "raw": "{{base_url}}/signals?limit=50", "host": ["{{base_url}}"], "path": ["signals"], "query": [{"key":"limit","value":"50"}] } } }
+      ]
+    },
+    {
+      "name": "Alerts",
+      "item": [
+        { "name": "List",
+          "request": { "method": "GET",
+            "url": { "raw": "{{base_url}}/alerts", "host": ["{{base_url}}"], "path": ["alerts"] } } },
+        { "name": "Create",
+          "request": { "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"BTC anomaly\",\n  \"rule_type\": \"anomaly\",\n  \"channels\": [\"telegram\", \"discord\"],\n  \"config\": { \"symbol\": \"BTC/USDT\", \"threshold\": 0.85 },\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/alerts", "host": ["{{base_url}}"], "path": ["alerts"] } } }
+      ]
+    },
+    {
+      "name": "Chains",
+      "item": [
+        { "name": "List",
+          "request": { "method": "GET",
+            "url": { "raw": "{{base_url}}/chains", "host": ["{{base_url}}"], "path": ["chains"] } } }
+      ]
+    }
+  ]
+}

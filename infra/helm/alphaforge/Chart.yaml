@@ -1,0 +1,10 @@
+apiVersion: v2
+name: alphaforge
+description: Helm chart for the AlphaForge platform
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords: [trading, defi, ml, on-chain, audit]
+maintainers:
+  - name: AlphaForge Team
+    email: ops@alphaforge.local

@@ -1,0 +1,6 @@
+AlphaForge has been deployed.
+
+Frontend  : http://{{ .Values.services.frontend.ingress.host }}
+API       : http://{{ .Values.services.api.ingress.host }}/api/v1/healthz
+
+Run `helm status {{ .Release.Name }}` to inspect the release.

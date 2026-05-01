@@ -1,0 +1,24 @@
+strategy: "Donchian breakout"
+description: |
+  Trade-following Donchian channel breakout. Buy on close above
+  upper band, manage with a trailing stop based on ATR.
+universe:
+  symbols: [BTC/USDT, ETH/USDT, SOL/USDT, AVAX/USDT, ARB/USDT]
+  timeframe: 4h
+parameters:
+  donchian_period: 55
+  atr_multiplier: 3.0
+  position_size: 0.1
+indicators:
+  - {name: donchian, alias: dc,    period: param("donchian_period")}
+  - {name: atr,       alias: atr14, period: 14}
+rules:
+  - when: above(close, dc_upper)
+    then: buy
+    size: param("position_size")
+    stop_loss: atr14 * param("atr_multiplier")
+  - when: below(close, dc_lower)
+    then: close
+risk:
+  max_drawdown: 0.25
+  max_concurrent_positions: 5

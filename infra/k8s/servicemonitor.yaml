@@ -1,0 +1,30 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: alphaforge-api
+  namespace: alphaforge
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: alphaforge-api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: alphaforge-ml
+  namespace: alphaforge
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: alphaforge-ml
+  endpoints:
+    - port: metrics
+      interval: 15s

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "alphaforge.fullname" . }}-config
+  labels:
+    {{- include "alphaforge.labels" (dict "name" "config" "Release" .Release "Chart" .Chart) | nindent 4 }}
+data:
+  APP_ENV: {{ .Values.global.env | quote }}
+  APP_LOG_LEVEL: {{ .Values.config.appLogLevel | quote }}
+  DATABASE_URL: {{ .Values.config.databaseUrl | quote }}
+  REDIS_URL: {{ .Values.config.redisUrl | quote }}
+  KAFKA_BOOTSTRAP_SERVERS: {{ .Values.config.kafkaBootstrap | quote }}
+  CLICKHOUSE_URL: {{ .Values.config.clickhouseUrl | quote }}
