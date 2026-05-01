@@ -24,7 +24,7 @@ export default function StrategiesPage() {
   );
 
   if (isLoading) return <div className="text-slate-400 text-sm">Loading strategies…</div>;
-  const items = data?.items.filter((s) => !s.is_archived) || [];
+  const items = data?.items?.filter((s) => !s.is_archived) || [];
 
   return (
     <div className="space-y-5">
