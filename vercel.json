@@ -1,13 +1,39 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
-  "installCommand": "echo 'deps installed via buildCommand'",
-  "framework": "vite",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/index.html" },
-    { "source": "/graphql", "destination": "/index.html" },
-    { "source": "/ws/(.*)", "destination": "/index.html" }
-  ],
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- frontend/"
+  "experimentalServices": {
+    "frontend": {
+      "routePrefix": "/"
+    },
+    "api": {
+      "entrypoint": "services/api",
+      "routePrefix": "/_/api"
+    },
+    "auditor": {
+      "entrypoint": "services/auditor",
+      "routePrefix": "/_/auditor"
+    },
+    "cli": {
+      "entrypoint": "services/cli",
+      "routePrefix": "/_/cli"
+    },
+    "ingestor": {
+      "entrypoint": "services/ingestor",
+      "routePrefix": "/_/ingestor"
+    },
+    "ml": {
+      "entrypoint": "services/ml",
+      "routePrefix": "/_/ml"
+    },
+    "notifier": {
+      "entrypoint": "services/notifier",
+      "routePrefix": "/_/notifier"
+    },
+    "quantcore": {
+      "entrypoint": "services/quantcore",
+      "routePrefix": "/_/quantcore"
+    },
+    "worker": {
+      "entrypoint": "services/worker",
+      "routePrefix": "/_/worker"
+    }
+  }
 }
