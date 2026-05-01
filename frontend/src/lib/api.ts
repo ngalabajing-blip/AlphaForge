@@ -1,9 +1,8 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
-
 import { useAuthStore } from "@/store/auth";
 
 const api: AxiosInstance = axios.create({
-  baseURL: "/api/v1",
+  baseURL: "/_/api",
   timeout: 15000,
 });
 
