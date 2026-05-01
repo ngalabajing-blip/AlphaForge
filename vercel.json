@@ -1,43 +1,8 @@
 {
-  "outputDirectory": "dist",
-  "experimentalServices": {
-    "frontend": {
-      "framework": "vite",
-      "installCommand": "cd frontend && npm install",
-      "buildCommand": "cd frontend && npm run build",
-      "routePrefix": "/"
-    },
-    "api": {
-      "entrypoint": "services/api/index.py",
-      "routePrefix": "/_/api"
-    },
-    "auditor": {
-      "entrypoint": "services/auditor/index.py",
-      "routePrefix": "/_/auditor"
-    },
-    "cli": {
-      "entrypoint": "services/cli/index.py",
-      "routePrefix": "/_/cli"
-    },
-    "ingestor": {
-      "entrypoint": "services/ingestor/index.py",
-      "routePrefix": "/_/ingestor"
-    },
-    "ml": {
-      "entrypoint": "services/ml/index.py",
-      "routePrefix": "/_/ml"
-    },
-    "notifier": {
-      "entrypoint": "services/notifier/index.py",
-      "routePrefix": "/_/notifier"
-    },
-    "quantcore": {
-      "entrypoint": "services/quantcore/index.py",
-      "routePrefix": "/_/quantcore"
-    },
-    "worker": {
-      "entrypoint": "services/worker/index.py",
-      "routePrefix": "/_/worker"
-    }
-  }
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/_/api/$1" }
+  ]
 }
