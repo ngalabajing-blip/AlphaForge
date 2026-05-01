@@ -1,4 +1,5 @@
 """Celery app — broker / backend wiring for the worker service."""
+
 from __future__ import annotations
 
 from celery import Celery

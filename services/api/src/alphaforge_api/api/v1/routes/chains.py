@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from alphaforge_shared.chains import all_chains, get_chain
 from fastapi import APIRouter, Depends, HTTPException
 
 from alphaforge_api.core.security import CurrentUser, get_current_user
-from alphaforge_shared.chains import all_chains, get_chain
 
 router = APIRouter(prefix="/chains")
 

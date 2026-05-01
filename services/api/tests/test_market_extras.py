@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
-
 from alphaforge_api.services.market_service import MarketService
 from alphaforge_shared.symbols import MarketSymbol
 
@@ -22,13 +21,13 @@ def test_latest_returns_recent_point(market: MarketService) -> None:
     sym = MarketSymbol("ETH", "USDT")
     point = _run(market.latest(sym))
     assert point.price > 0
-    age = (datetime.now(tz=timezone.utc) - point.ts).total_seconds()
+    age = (datetime.now(tz=UTC) - point.ts).total_seconds()
     assert abs(age) < 5
 
 
 def test_candles_respect_limit(market: MarketService) -> None:
     sym = MarketSymbol("BTC", "USDT")
-    end = datetime.now(tz=timezone.utc)
+    end = datetime.now(tz=UTC)
     start = end - timedelta(days=1)
     candles = _run(market.candles(sym, timeframe="1h", start=start, end=end, limit=12))
     assert 0 < len(candles) <= 12

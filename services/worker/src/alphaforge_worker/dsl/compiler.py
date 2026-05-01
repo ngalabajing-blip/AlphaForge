@@ -15,12 +15,13 @@ Supported tokens:
 
 This is intentionally hand-written (no dependencies) so it stays auditable.
 """
+
 from __future__ import annotations
 
 import re
-from typing import Iterator, List, Tuple
 
 from alphaforge_shared.exceptions import StrategyParseError
+
 from alphaforge_worker.dsl.ast import (
     BinOp,
     Bool,
@@ -46,7 +47,7 @@ LOGICAL = {"and", "or", "not"}
 COMPARATORS = {">", "<", ">=", "<=", "==", "!="}
 
 
-def _tokenise(expr: str) -> List[Tuple[str, str]]:
+def _tokenise(expr: str) -> list[tuple[str, str]]:
     pos = 0
     tokens: list[tuple[str, str]] = []
     while pos < len(expr):

@@ -4,7 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from alphaforge_api.core.database import get_session
-from alphaforge_api.core.security import CurrentUser, Role, get_current_user, require_role
+from alphaforge_api.core.security import (
+    CurrentUser,
+    Role,
+    get_current_user,
+    require_role,
+)
 from alphaforge_api.repositories.user import UserRepository
 from alphaforge_api.schemas.common import Page, PageMeta
 from alphaforge_api.schemas.user import UserOut
@@ -37,6 +42,11 @@ async def list_users(
     items = await repo.list(limit=size, offset=(page - 1) * size)
     return Page(
         items=[UserOut.model_validate(u) for u in items],
-        meta=PageMeta(total=total, page=page, size=size,
-                      has_next=page * size < total, has_prev=page > 1),
+        meta=PageMeta(
+            total=total,
+            page=page,
+            size=size,
+            has_next=page * size < total,
+            has_prev=page > 1,
+        ),
     )

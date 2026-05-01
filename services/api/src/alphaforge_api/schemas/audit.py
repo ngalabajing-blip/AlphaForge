@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -17,9 +17,9 @@ class FindingOut(BaseModel):
     severity: str
     title: str
     description: str
-    location: Optional[str]
-    cwe: Optional[str]
-    swc: Optional[str]
+    location: str | None
+    cwe: str | None
+    swc: str | None
 
 
 class AuditOut(BaseModel):
@@ -29,13 +29,13 @@ class AuditOut(BaseModel):
     chain: str
     address: str
     status: str
-    started_at: Optional[datetime]
-    completed_at: Optional[datetime]
-    risk_score: Optional[float]
-    risk_level: Optional[str]
-    summary: Optional[str]
+    started_at: datetime | None
+    completed_at: datetime | None
+    risk_score: float | None
+    risk_level: str | None
+    summary: str | None
     findings: list[dict[str, Any]] = Field(default_factory=list)
-    bytecode_size: Optional[int]
-    has_source: Optional[bool]
-    error: Optional[str]
+    bytecode_size: int | None
+    has_source: bool | None
+    error: str | None
     created_at: datetime

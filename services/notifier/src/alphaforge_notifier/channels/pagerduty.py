@@ -1,4 +1,5 @@
 """PagerDuty Events API v2 delivery."""
+
 from __future__ import annotations
 
 from typing import Any

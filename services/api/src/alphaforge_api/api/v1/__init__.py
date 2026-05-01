@@ -1,4 +1,5 @@
 """API v1 — REST routers."""
+
 from fastapi import APIRouter
 
 from alphaforge_api.api.v1.routes import (

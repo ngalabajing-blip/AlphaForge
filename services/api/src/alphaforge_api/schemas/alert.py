@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class AlertCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: str | None = None
     rule_type: str
     rule_config: dict[str, Any] = Field(default_factory=dict)
     channels: list[str] = Field(default_factory=list)
@@ -17,12 +17,12 @@ class AlertCreate(BaseModel):
 
 
 class AlertUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    enabled: Optional[bool] = None
-    rule_config: Optional[dict[str, Any]] = None
-    channels: Optional[list[str]] = None
-    cooldown_seconds: Optional[int] = None
+    name: str | None = None
+    description: str | None = None
+    enabled: bool | None = None
+    rule_config: dict[str, Any] | None = None
+    channels: list[str] | None = None
+    cooldown_seconds: int | None = None
 
 
 class AlertOut(BaseModel):
@@ -31,13 +31,13 @@ class AlertOut(BaseModel):
     id: str
     owner_id: str
     name: str
-    description: Optional[str]
+    description: str | None
     enabled: bool
     rule_type: str
     rule_config: dict[str, Any]
     channels: list[str]
     cooldown_seconds: int
-    last_fired_at: Optional[datetime]
+    last_fired_at: datetime | None
     fire_count: int
     created_at: datetime
 
@@ -50,4 +50,4 @@ class AlertDeliveryOut(BaseModel):
     channel: str
     delivered_at: datetime
     success: bool
-    error: Optional[str]
+    error: str | None

@@ -1,9 +1,9 @@
 """Optional enrichment helpers (token metadata caching)."""
+
 from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -22,7 +22,7 @@ class TokenMetadataCache:
         self._data: dict[str, TokenMetadata] = {}
         self._lock = asyncio.Lock()
 
-    async def get(self, chain: str, address: str) -> Optional[TokenMetadata]:
+    async def get(self, chain: str, address: str) -> TokenMetadata | None:
         async with self._lock:
             return self._data.get(f"{chain}:{address.lower()}")
 

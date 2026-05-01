@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -11,7 +10,7 @@ from alphaforge_api.core.security import Role
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=256)
-    full_name: Optional[str] = None
+    full_name: str | None = None
     role: Role = Role.RESEARCHER
 
 
@@ -25,10 +24,10 @@ class UserOut(BaseModel):
 
     id: str
     email: EmailStr
-    full_name: Optional[str]
+    full_name: str | None
     role: str
     is_active: bool
-    last_login_at: Optional[datetime]
+    last_login_at: datetime | None
 
 
 class TokenPair(BaseModel):
@@ -41,7 +40,7 @@ class TokenPair(BaseModel):
 class APIKeyCreate(BaseModel):
     label: str = Field(min_length=1, max_length=255)
     scopes: list[str] = Field(default_factory=list)
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
 
 class APIKeyOut(BaseModel):
@@ -50,9 +49,9 @@ class APIKeyOut(BaseModel):
     id: str
     label: str
     scopes: list[str]
-    last_used_at: Optional[datetime]
-    expires_at: Optional[datetime]
-    revoked_at: Optional[datetime]
+    last_used_at: datetime | None
+    expires_at: datetime | None
+    revoked_at: datetime | None
     created_at: datetime
 
 

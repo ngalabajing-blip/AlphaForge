@@ -4,53 +4,82 @@ import asyncio
 from typing import Any
 
 import pytest
-
-from alphaforge_notifier.dispatcher import NotificationDispatcher
-from alphaforge_notifier.channels import Channel
+from alphaforge_notifier.channels.base import Channel, DeliveryResult
+from alphaforge_notifier.dispatcher import NotifierDispatcher
 
 
 class _RecordingChannel(Channel):
-    def __init__(self, name: str, *, fail_on: int | None = None) -> None:
-        self.name = name
-        self.calls: list[dict[str, Any]] = []
-        self.fail_on = fail_on
-        self.invocation = 0
+    name = "test"
 
-    async def send(self, payload: dict[str, Any]) -> dict[str, Any]:
-        self.invocation += 1
-        self.calls.append(payload)
-        if self.fail_on is not None and self.invocation == self.fail_on:
+    def __init__(self, *, fail: bool = False) -> None:
+        self.calls: list[dict[str, Any]] = []
+        self.fail = fail
+
+    async def send(self, alert: dict[str, Any], rendered: dict[str, str]) -> DeliveryResult:
+        self.calls.append({"alert": alert, "rendered": rendered})
+        if self.fail:
             raise RuntimeError("boom")
-        return {"channel": self.name, "ok": True}
+        return DeliveryResult(channel="test", success=True)
 
 
 def _run(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.new_event_loop().run_until_complete(coro)
 
 
-def test_dispatcher_fans_out_to_all_channels() -> None:
-    a = _RecordingChannel("telegram")
-    b = _RecordingChannel("discord")
-    disp = NotificationDispatcher(channels={"telegram": a, "discord": b})
-    out = _run(disp.dispatch({"channels": ["telegram", "discord"], "payload": {"x": 1}}))
-    assert {r["channel"] for r in out} == {"telegram", "discord"}
-    assert a.calls == [{"x": 1}]
-    assert b.calls == [{"x": 1}]
+@pytest.fixture
+def dispatcher() -> NotifierDispatcher:
+    d = NotifierDispatcher()
+    return d
 
 
-def test_dispatcher_skips_unknown_channel() -> None:
-    a = _RecordingChannel("telegram")
-    disp = NotificationDispatcher(channels={"telegram": a})
-    out = _run(disp.dispatch({"channels": ["telegram", "nope"], "payload": {"x": 2}}))
-    names = {r["channel"] for r in out}
-    assert "telegram" in names
-    assert "nope" not in names
+def _alert(alert_id: str = "a-1", channels: list[str] | None = None, owner: str = "u1") -> dict[str, Any]:
+    return {
+        "alert_id": alert_id,
+        "rule_type": "anomaly",
+        "symbol": "ETH/USDT",
+        "owner_id": owner,
+        "channels": channels or ["test"],
+        "title": "Anomaly detected",
+        "message": "abnormal volume",
+        "severity": "high",
+        "payload": {"digest": "x"},
+    }
 
 
-def test_dispatcher_records_failure() -> None:
-    a = _RecordingChannel("telegram", fail_on=1)
-    disp = NotificationDispatcher(channels={"telegram": a})
-    out = _run(disp.dispatch({"channels": ["telegram"], "payload": {"x": 3}}))
-    assert out[0]["channel"] == "telegram"
-    assert out[0]["ok"] is False
-    assert "boom" in out[0]["error"]
+def test_dispatch_succeeds_via_recording_channel(
+    dispatcher: NotifierDispatcher,
+) -> None:
+    ch = _RecordingChannel()
+    dispatcher._channels = {"test": ch}
+    results = _run(dispatcher.dispatch(_alert()))
+    assert len(results) == 1
+    assert results[0].success
+    assert ch.calls and ch.calls[0]["alert"]["alert_id"] == "a-1"
+
+
+def test_dispatch_unknown_channel_returns_error(dispatcher: NotifierDispatcher) -> None:
+    dispatcher._channels = {}
+    results = _run(dispatcher.dispatch(_alert(channels=["nope"])))
+    assert results[0].success is False
+    assert results[0].error == "unknown_channel"
+
+
+def test_dispatch_dedup_blocks_second_identical_alert(
+    dispatcher: NotifierDispatcher,
+) -> None:
+    ch = _RecordingChannel()
+    dispatcher._channels = {"test": ch}
+    a = _alert(alert_id="dup-1")
+    _run(dispatcher.dispatch(a))
+    second = _run(dispatcher.dispatch(a))
+    assert second[0].channel == "dedup" and second[0].success is False
+
+
+def test_dispatch_propagates_send_exception_as_error_result(
+    dispatcher: NotifierDispatcher,
+) -> None:
+    ch = _RecordingChannel(fail=True)
+    dispatcher._channels = {"test": ch}
+    results = _run(dispatcher.dispatch(_alert()))
+    assert results[0].success is False
+    assert "boom" in (results[0].error or "")

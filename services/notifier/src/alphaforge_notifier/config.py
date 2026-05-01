@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from pydantic import Field
-
 from alphaforge_shared.settings import CommonSettings
+from pydantic import Field
 
 
 class NotifierSettings(CommonSettings):

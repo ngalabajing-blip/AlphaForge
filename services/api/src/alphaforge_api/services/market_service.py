@@ -5,14 +5,13 @@ In production the candle / trade / orderbook data is sourced from ClickHouse,
 populated by the ingestor service. For local dev we synthesise data so the API
 remains functional without a populated time-series store.
 """
+
 from __future__ import annotations
 
-import math
 import random
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-from typing import List
 
 from alphaforge_shared.symbols import MarketSymbol
 from alphaforge_shared.timeframes import parse_timeframe
@@ -47,7 +46,7 @@ def _pseudo_price(symbol: MarketSymbol, ts: datetime) -> Decimal:
 
 class MarketService:
     async def latest(self, symbol: MarketSymbol) -> PricePoint:
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         return PricePoint(price=_pseudo_price(symbol, now), ts=now)
 
     async def candles(
@@ -58,12 +57,12 @@ class MarketService:
         start: datetime,
         end: datetime,
         limit: int,
-    ) -> List[dict]:
+    ) -> list[dict]:
         tf = parse_timeframe(timeframe)
         if start.tzinfo is None:
-            start = start.replace(tzinfo=timezone.utc)
+            start = start.replace(tzinfo=UTC)
         if end.tzinfo is None:
-            end = end.replace(tzinfo=timezone.utc)
+            end = end.replace(tzinfo=UTC)
         ts = tf.floor(start)
         out: list[dict] = []
         while ts < end and len(out) < limit:
@@ -90,7 +89,7 @@ class MarketService:
         return out
 
     async def orderbook_snapshot(self, symbol: MarketSymbol, *, depth: int) -> dict:
-        mid = float(_pseudo_price(symbol, datetime.now(tz=timezone.utc)))
+        mid = float(_pseudo_price(symbol, datetime.now(tz=UTC)))
         rng = random.Random(hash(symbol.canonical))
         bids = []
         asks = []
@@ -103,7 +102,7 @@ class MarketService:
             asks.append([ask_price, ask_size])
         return {
             "symbol": symbol.canonical,
-            "ts": datetime.now(tz=timezone.utc).isoformat(),
+            "ts": datetime.now(tz=UTC).isoformat(),
             "bids": bids,
             "asks": asks,
         }
@@ -113,15 +112,32 @@ class MarketService:
         weights: list[float] = []
         for b in bases:
             sym = MarketSymbol(b, quote.upper())
-            p = float(_pseudo_price(sym, datetime.now(tz=timezone.utc)))
+            p = float(_pseudo_price(sym, datetime.now(tz=UTC)))
             weights.append(p)
         total = sum(weights) or 1.0
         return {b: round(w / total, 4) for b, w in zip(bases, weights)}
 
     async def top_movers(self, *, n: int, direction: str) -> list[dict]:
-        symbols = ["BTC", "ETH", "SOL", "BNB", "MATIC", "AVAX", "ARB", "OP", "ATOM",
-                   "DOGE", "PEPE", "SHIB", "LINK", "UNI", "AAVE", "MKR", "INJ"]
-        rng = random.Random(int(datetime.now(tz=timezone.utc).timestamp()) // 60)
+        symbols = [
+            "BTC",
+            "ETH",
+            "SOL",
+            "BNB",
+            "MATIC",
+            "AVAX",
+            "ARB",
+            "OP",
+            "ATOM",
+            "DOGE",
+            "PEPE",
+            "SHIB",
+            "LINK",
+            "UNI",
+            "AAVE",
+            "MKR",
+            "INJ",
+        ]
+        rng = random.Random(int(datetime.now(tz=UTC).timestamp()) // 60)
         movers = [
             {
                 "symbol": f"{s}/USDT",

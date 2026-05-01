@@ -1,11 +1,11 @@
 """Centralised error handling."""
+
 from __future__ import annotations
 
+from alphaforge_shared.exceptions import AlphaForgeError, APIError
+from alphaforge_shared.logging import get_logger
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-
-from alphaforge_shared.exceptions import APIError, AlphaForgeError
-from alphaforge_shared.logging import get_logger
 
 log = get_logger("alphaforge_api.errors")
 

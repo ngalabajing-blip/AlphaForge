@@ -3,24 +3,25 @@ EVM adapter — subscribes to ``newHeads`` over WebSocket if available, and
 falls back to HTTP polling. Decodes a curated subset of ERC-20 / Uniswap V2
 events from logs.
 """
+
 from __future__ import annotations
 
 import asyncio
 import json
 import os
 from decimal import Decimal
-from typing import Any, AsyncIterator
+from typing import Any
 
 import httpx
+from alphaforge_shared.events import BlockEvent, LogEvent, TransactionEvent
+from alphaforge_shared.logging import get_logger
+from alphaforge_shared.topics import T_BLOCKS, T_LOGS, T_TRANSACTIONS
 from tenacity import AsyncRetrying, stop_after_attempt, wait_exponential
 
 from alphaforge_ingestor.adapters.base import ChainAdapter
 from alphaforge_ingestor.config import get_settings
 from alphaforge_ingestor.kafka_sink import KafkaSink
 from alphaforge_ingestor.pipeline.decoder import EVMLogDecoder
-from alphaforge_shared.events import BlockEvent, LogEvent, TransactionEvent
-from alphaforge_shared.logging import get_logger
-from alphaforge_shared.topics import T_BLOCKS, T_LOGS, T_TRANSACTIONS
 
 log = get_logger("alphaforge_ingestor.evm")
 
@@ -36,7 +37,11 @@ class EVMAdapter(ChainAdapter):
         if not rpc_http:
             log.warning("evm_no_rpc_http", chain=self.spec.id, env=self.spec.rpc_http_env)
             return
-        self._http = httpx.AsyncClient(base_url=rpc_http, timeout=15.0, headers={"Content-Type": "application/json"})
+        self._http = httpx.AsyncClient(
+            base_url=rpc_http,
+            timeout=15.0,
+            headers={"Content-Type": "application/json"},
+        )
         ws_url = os.getenv(self.spec.rpc_ws_env)
         if ws_url:
             try:
@@ -57,8 +62,16 @@ class EVMAdapter(ChainAdapter):
 
         log.info("evm_ws_connect", chain=self.spec.id, url=_redact(ws_url))
         async with websockets.connect(ws_url, ping_interval=15, ping_timeout=15) as ws:
-            await ws.send(json.dumps({"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe",
-                                     "params": ["newHeads"]}))
+            await ws.send(
+                json.dumps(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "method": "eth_subscribe",
+                        "params": ["newHeads"],
+                    }
+                )
+            )
             ack = await ws.recv()
             log.debug("evm_ws_subscribed", chain=self.spec.id, ack=ack)
             while True:
@@ -86,8 +99,10 @@ class EVMAdapter(ChainAdapter):
                 if tip is None:
                     await asyncio.sleep(settings.poll_interval_seconds)
                     continue
-                start_h = max(last_height + 1 if last_height else tip - 1,
-                              tip - settings.max_block_lookback)
+                start_h = max(
+                    last_height + 1 if last_height else tip - 1,
+                    tip - settings.max_block_lookback,
+                )
                 for h in range(start_h, tip + 1):
                     block = await self._fetch_block(h)
                     if block is not None:
@@ -154,9 +169,9 @@ class EVMAdapter(ChainAdapter):
                     tx_hash=tx["hash"],
                     sender=tx["from"],
                     recipient=tx.get("to"),
-                    value_native=Decimal(int(tx.get("value", "0x0"), 16)) / Decimal(10 ** 18),
-                    gas_price=Decimal(int(tx.get("gasPrice", "0x0"), 16)) if "gasPrice" in tx else None,
-                    method_id=tx.get("input", "0x")[:10] if tx.get("input", "0x") != "0x" else None,
+                    value_native=Decimal(int(tx.get("value", "0x0"), 16)) / Decimal(10**18),
+                    gas_price=(Decimal(int(tx.get("gasPrice", "0x0"), 16)) if "gasPrice" in tx else None),
+                    method_id=(tx.get("input", "0x")[:10] if tx.get("input", "0x") != "0x" else None),
                 )
                 await sink.publish(T_TRANSACTIONS, ev, key=tx["hash"], chain=self.spec.id)
             except Exception:  # noqa: BLE001

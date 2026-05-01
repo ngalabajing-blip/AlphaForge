@@ -3,49 +3,65 @@ from __future__ import annotations
 import time
 
 import pytest
-
 from alphaforge_api.core.security import (
+    Role,
+    constant_time_eq,
     create_access_token,
     create_refresh_token,
     decode_token,
+    generate_api_key,
     hash_api_key,
-    verify_api_key,
+    hash_password,
+    verify_password,
 )
+from fastapi import HTTPException
+
+
+def test_password_roundtrip() -> None:
+    h = hash_password("s3cret")
+    assert h != "s3cret"
+    assert verify_password("s3cret", h)
+    assert not verify_password("nope", h)
 
 
 def test_access_and_refresh_tokens_are_distinct() -> None:
-    a = create_access_token(subject="user-1", scopes=["read"])
+    a = create_access_token(subject="user-1", role=Role.RESEARCHER)
     r = create_refresh_token(subject="user-1")
     assert a != r
-    decoded_a = decode_token(a)
-    decoded_r = decode_token(r)
-    assert decoded_a["sub"] == decoded_r["sub"] == "user-1"
-    assert decoded_a["type"] == "access"
-    assert decoded_r["type"] == "refresh"
+    da = decode_token(a)
+    dr = decode_token(r)
+    assert da["sub"] == dr["sub"] == "user-1"
+    assert da["type"] == "access"
+    assert dr["type"] == "refresh"
+    assert da["role"] == "researcher"
 
 
-def test_decode_invalid_token_raises() -> None:
-    with pytest.raises(Exception):
+def test_decode_invalid_token_raises_401() -> None:
+    with pytest.raises(HTTPException) as exc:
         decode_token("not-a-token")
+    assert exc.value.status_code == 401
 
 
-def test_api_key_hash_roundtrip() -> None:
-    raw = "afk_" + "a" * 32
-    digest = hash_api_key(raw)
-    assert digest != raw
-    assert verify_api_key(raw, digest)
-    assert not verify_api_key(raw + "b", digest)
+def test_api_key_hash_is_deterministic_and_unique() -> None:
+    plain, h = generate_api_key()
+    assert plain.startswith("afk_")
+    assert hash_api_key(plain) == h
+    assert hash_api_key(plain + "x") != h
 
 
-def test_access_token_includes_scopes() -> None:
-    token = create_access_token(subject="user-2", scopes=["read", "write"])
-    decoded = decode_token(token)
-    assert "read" in decoded["scope"]
-    assert "write" in decoded["scope"]
+def test_constant_time_eq_matches_for_equal_strings() -> None:
+    assert constant_time_eq("abc", "abc")
+    assert not constant_time_eq("abc", "abd")
 
 
-@pytest.mark.skipif(time is None, reason="time not available")
 def test_token_has_exp_in_future() -> None:
-    token = create_access_token(subject="u", scopes=[])
+    token = create_access_token(subject="u", role=Role.VIEWER)
     decoded = decode_token(token)
     assert decoded["exp"] > int(time.time())
+
+
+def test_admin_role_has_more_perms_than_viewer() -> None:
+    from alphaforge_api.core.security import PERMISSIONS
+
+    assert PERMISSIONS[Role.ADMIN] > PERMISSIONS[Role.VIEWER]
+    assert "read:any" in PERMISSIONS[Role.VIEWER]

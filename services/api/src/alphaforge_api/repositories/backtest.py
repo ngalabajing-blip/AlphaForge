@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,13 +15,9 @@ class BacktestRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def get(self, backtest_id: str, *, with_trades: bool = False) -> Optional[Backtest]:
+    async def get(self, backtest_id: str, *, with_trades: bool = False) -> Backtest | None:
         if with_trades:
-            stmt = (
-                select(Backtest)
-                .options(selectinload(Backtest.trades))
-                .where(Backtest.id == backtest_id)
-            )
+            stmt = select(Backtest).options(selectinload(Backtest.trades)).where(Backtest.id == backtest_id)
             return (await self.session.execute(stmt)).scalar_one_or_none()
         return await self.session.get(Backtest, backtest_id)
 
@@ -34,8 +30,8 @@ class BacktestRepository:
     async def list(
         self,
         *,
-        strategy_id: Optional[str] = None,
-        status: Optional[str] = None,
+        strategy_id: str | None = None,
+        status: str | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> list[Backtest]:
@@ -47,7 +43,7 @@ class BacktestRepository:
         stmt = stmt.order_by(Backtest.created_at.desc()).limit(limit).offset(offset)
         return list((await self.session.execute(stmt)).scalars().all())
 
-    async def count(self, *, strategy_id: Optional[str] = None, status: Optional[str] = None) -> int:
+    async def count(self, *, strategy_id: str | None = None, status: str | None = None) -> int:
         stmt = select(func.count()).select_from(Backtest)
         if strategy_id:
             stmt = stmt.where(Backtest.strategy_id == strategy_id)
@@ -55,7 +51,7 @@ class BacktestRepository:
             stmt = stmt.where(Backtest.status == status)
         return int((await self.session.execute(stmt)).scalar() or 0)
 
-    async def update_status(self, bt: Backtest, status: str, *, error: Optional[str] = None) -> Backtest:
+    async def update_status(self, bt: Backtest, status: str, *, error: str | None = None) -> Backtest:
         bt.status = status
         if error:
             bt.error = error

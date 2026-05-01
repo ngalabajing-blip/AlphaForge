@@ -1,5 +1,4 @@
 import pytest
-
 from alphaforge_shared.chains import (
     ChainFamily,
     all_chains,

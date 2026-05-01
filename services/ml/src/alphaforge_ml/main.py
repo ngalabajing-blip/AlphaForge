@@ -10,17 +10,19 @@ Three coroutines run concurrently:
 * ``prediction_loop`` — consumes :data:`T_PRICES` candles and publishes
   :data:`T_PRICE_PREDICTION`.
 """
+
 from __future__ import annotations
 
 import asyncio
 import signal
 
-from alphaforge_ml.config import get_settings
-from alphaforge_ml.consumers.anomaly_loop import run_anomaly_loop
-from alphaforge_ml.consumers.sentiment_loop import run_sentiment_loop
-from alphaforge_ml.consumers.prediction_loop import run_prediction_loop
 from alphaforge_shared.logging import configure_logging, get_logger
 from alphaforge_shared.telemetry import configure_tracing
+
+from alphaforge_ml.config import get_settings
+from alphaforge_ml.consumers.anomaly_loop import run_anomaly_loop
+from alphaforge_ml.consumers.prediction_loop import run_prediction_loop
+from alphaforge_ml.consumers.sentiment_loop import run_sentiment_loop
 
 log = get_logger("alphaforge_ml.main")
 

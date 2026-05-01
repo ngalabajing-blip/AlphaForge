@@ -1,4 +1,5 @@
 """Base classes for delivery channels."""
+
 from __future__ import annotations
 
 import abc
@@ -18,5 +19,4 @@ class Channel(abc.ABC):
     name: str
 
     @abc.abstractmethod
-    async def send(self, alert: dict[str, Any], rendered: dict[str, str]) -> DeliveryResult:
-        ...
+    async def send(self, alert: dict[str, Any], rendered: dict[str, str]) -> DeliveryResult: ...

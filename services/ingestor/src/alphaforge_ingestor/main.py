@@ -5,19 +5,19 @@ The service launches one task per enabled chain. Each task wraps a chain
 adapter (EVM / Solana / Cosmos), reconnects on failure, and publishes
 normalised events to Kafka.
 """
+
 from __future__ import annotations
 
 import asyncio
 import signal
-from typing import Awaitable, Callable
+
+from alphaforge_shared.chains import get_chain
+from alphaforge_shared.logging import configure_logging, get_logger
+from alphaforge_shared.telemetry import configure_tracing
 
 from alphaforge_ingestor.config import get_settings
 from alphaforge_ingestor.kafka_sink import KafkaSink
 from alphaforge_ingestor.pipeline.dispatcher import ChainDispatcher
-from alphaforge_shared.chains import ChainFamily, get_chain
-from alphaforge_shared.logging import configure_logging, get_logger
-from alphaforge_shared.telemetry import configure_tracing
-
 
 log = get_logger("alphaforge_ingestor.main")
 

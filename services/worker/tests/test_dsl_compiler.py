@@ -1,5 +1,4 @@
 import pytest
-
 from alphaforge_shared.exceptions import StrategyParseError
 from alphaforge_worker.dsl.ast import BinOp, FunctionCall, Number, Symbol, UnaryOp
 from alphaforge_worker.dsl.compiler import compile_expression

@@ -1,4 +1,5 @@
 """Discord webhook delivery."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -19,15 +20,20 @@ class DiscordChannel(Channel):
         if not webhook:
             return DeliveryResult(self.name, False, error="missing_webhook")
         try:
-            r = await self._http.post(webhook, json={
-                "username": "AlphaForge",
-                "content": rendered["markdown"][:1900],
-                "embeds": [{
-                    "title": rendered["title"],
-                    "description": rendered["text"][:2000],
-                    "color": 0xE74C3C if rendered["severity"] in {"critical", "high"} else 0x3498DB,
-                }],
-            })
+            r = await self._http.post(
+                webhook,
+                json={
+                    "username": "AlphaForge",
+                    "content": rendered["markdown"][:1900],
+                    "embeds": [
+                        {
+                            "title": rendered["title"],
+                            "description": rendered["text"][:2000],
+                            "color": (0xE74C3C if rendered["severity"] in {"critical", "high"} else 0x3498DB),
+                        }
+                    ],
+                },
+            )
             r.raise_for_status()
             return DeliveryResult(self.name, True)
         except Exception as exc:  # noqa: BLE001

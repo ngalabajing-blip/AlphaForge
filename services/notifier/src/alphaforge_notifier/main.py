@@ -1,14 +1,16 @@
 """Notifier service entrypoint — consumes alerts from Kafka and fans out."""
+
 from __future__ import annotations
 
 import asyncio
 import signal
 
-from alphaforge_notifier.config import get_settings
-from alphaforge_notifier.dispatcher import NotifierDispatcher
-from alphaforge_notifier.consumer import AlertConsumer
 from alphaforge_shared.logging import configure_logging, get_logger
 from alphaforge_shared.telemetry import configure_tracing
+
+from alphaforge_notifier.config import get_settings
+from alphaforge_notifier.consumer import AlertConsumer
+from alphaforge_notifier.dispatcher import NotifierDispatcher
 
 log = get_logger("alphaforge_notifier.main")
 

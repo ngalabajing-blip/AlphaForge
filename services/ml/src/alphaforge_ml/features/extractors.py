@@ -7,13 +7,13 @@ The anomaly extractor folds raw trade events into a per-window feature vector
 The candle extractor produces a vector per candle suitable for an LSTM /
 RandomForest forecaster.
 """
+
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
-from decimal import Decimal
 from statistics import StatisticsError, mean, pstdev
-from typing import Iterable, Sequence
 
 
 # ── trade-flow features (anomaly) ─────────────────────────────────────────────
@@ -86,8 +86,19 @@ class CandleFeatureRow:
     momentum: float
 
     def as_vector(self) -> list[float]:
-        return [self.o, self.h, self.l, self.c, self.v, self.rsi,
-                self.sma_fast, self.sma_slow, self.bb_upper, self.bb_lower, self.momentum]
+        return [
+            self.o,
+            self.h,
+            self.l,
+            self.c,
+            self.v,
+            self.rsi,
+            self.sma_fast,
+            self.sma_slow,
+            self.bb_upper,
+            self.bb_lower,
+            self.momentum,
+        ]
 
 
 def _sma(values: list[float], window: int) -> float:
@@ -121,11 +132,13 @@ def _bollinger(closes: list[float], window: int = 20, k: float = 2.0) -> tuple[f
     window_vals = closes[-window:]
     mu = sum(window_vals) / window
     var = sum((v - mu) ** 2 for v in window_vals) / window
-    std = var ** 0.5
+    std = var**0.5
     return (mu + k * std, mu - k * std)
 
 
-def extract_candle_features(candles: Iterable[dict], *, fast: int = 12, slow: int = 26) -> list[CandleFeatureRow]:
+def extract_candle_features(
+    candles: Iterable[dict], *, fast: int = 12, slow: int = 26
+) -> list[CandleFeatureRow]:
     rows: list[CandleFeatureRow] = []
     closes: list[float] = []
     for c in candles:
@@ -133,8 +146,16 @@ def extract_candle_features(candles: Iterable[dict], *, fast: int = 12, slow: in
         upper, lower = _bollinger(closes)
         rows.append(
             CandleFeatureRow(
-                ts=c["ts"] if isinstance(c["ts"], datetime) else datetime.fromisoformat(str(c["ts"]).replace("Z", "+00:00")),
-                o=float(c["open"]), h=float(c["high"]), l=float(c["low"]), c=closes[-1], v=float(c.get("volume", 0)),
+                ts=(
+                    c["ts"]
+                    if isinstance(c["ts"], datetime)
+                    else datetime.fromisoformat(str(c["ts"]).replace("Z", "+00:00"))
+                ),
+                o=float(c["open"]),
+                h=float(c["high"]),
+                l=float(c["low"]),
+                c=closes[-1],
+                v=float(c.get("volume", 0)),
                 rsi=_rsi(closes),
                 sma_fast=_sma(closes, fast),
                 sma_slow=_sma(closes, slow),

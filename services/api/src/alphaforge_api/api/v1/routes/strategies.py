@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from alphaforge_api.core.database import get_session
-from alphaforge_api.core.security import CurrentUser, get_current_user, require_permission
+from alphaforge_api.core.security import (
+    CurrentUser,
+    get_current_user,
+    require_permission,
+)
 from alphaforge_api.repositories.strategy import StrategyRepository
 from alphaforge_api.schemas.common import Page, PageMeta
 from alphaforge_api.schemas.strategy import (
@@ -31,13 +35,20 @@ async def list_strategies(
     owner_id = user.user_id if mine else None
     total = await repo.count(owner_id=owner_id, include_public=public)
     items = await repo.list(
-        owner_id=owner_id, include_public=public,
-        limit=size, offset=(page - 1) * size,
+        owner_id=owner_id,
+        include_public=public,
+        limit=size,
+        offset=(page - 1) * size,
     )
     return Page(
         items=[StrategyOut.model_validate(s) for s in items],
-        meta=PageMeta(total=total, page=page, size=size,
-                      has_next=page * size < total, has_prev=page > 1),
+        meta=PageMeta(
+            total=total,
+            page=page,
+            size=size,
+            has_next=page * size < total,
+            has_prev=page > 1,
+        ),
     )
 
 
@@ -114,7 +125,10 @@ async def add_version(
 ) -> StrategyVersionOut:
     service = StrategyService(session)
     version = await service.add_version(
-        strategy_id=strategy_id, owner_id=user.user_id,
-        raw_source=raw_source, parameters=parameters or {}, notes=notes,
+        strategy_id=strategy_id,
+        owner_id=user.user_id,
+        raw_source=raw_source,
+        parameters=parameters or {},
+        notes=notes,
     )
     return StrategyVersionOut.model_validate(version)

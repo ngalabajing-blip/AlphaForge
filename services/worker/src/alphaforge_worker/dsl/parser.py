@@ -5,13 +5,15 @@ Translates raw documents into the typed :mod:`ast` representation. Expression
 strings (``cross_up(fast, slow)``) are compiled by
 :mod:`alphaforge_worker.dsl.compiler`.
 """
+
 from __future__ import annotations
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 import orjson
-
 from alphaforge_shared.exceptions import StrategyParseError
+
 from alphaforge_worker.dsl.ast import (
     Indicator,
     RiskConfig,

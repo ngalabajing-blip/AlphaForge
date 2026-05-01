@@ -5,19 +5,20 @@ Uses a small unsupervised Isolation Forest to score per-window feature
 vectors. When ``contamination`` is unknown, we fall back to a robust z-score
 heuristic so the service can run even without scikit-learn installed.
 """
+
 from __future__ import annotations
 
 import math
 import statistics
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from alphaforge_ml.config import get_settings
 
 
 @dataclass
 class AnomalyScore:
-    score: float           # 0..1, higher = more anomalous
+    score: float  # 0..1, higher = more anomalous
     is_anomaly: bool
     explanations: list[str]
 
@@ -30,6 +31,7 @@ class AnomalyDetector:
         self._sklearn_available = False
         try:
             from sklearn.ensemble import IsolationForest  # type: ignore[import-not-found]
+
             self.model = IsolationForest(
                 contamination=get_settings().anomaly_contamination,
                 n_estimators=128,
@@ -47,7 +49,12 @@ class AnomalyDetector:
         except Exception:
             pass
 
-    def score(self, vector: Sequence[float], *, history: Sequence[Sequence[float]] | None = None) -> AnomalyScore:
+    def score(
+        self,
+        vector: Sequence[float],
+        *,
+        history: Sequence[Sequence[float]] | None = None,
+    ) -> AnomalyScore:
         if self._sklearn_available and self.model is not None:
             try:
                 # IsolationForest score: higher = normal, so invert
@@ -91,8 +98,16 @@ class AnomalyDetector:
     def _explain(vector: Sequence[float], history: Sequence[Sequence[float]]) -> list[str]:
         if not history:
             return []
-        names = ["n_trades", "total_volume", "mean_size", "std_size", "max_size",
-                 "buy_ratio", "unique_addresses", "price_change_pct"]
+        names = [
+            "n_trades",
+            "total_volume",
+            "mean_size",
+            "std_size",
+            "max_size",
+            "buy_ratio",
+            "unique_addresses",
+            "price_change_pct",
+        ]
         notes: list[str] = []
         for i, v in enumerate(vector):
             col = [row[i] for row in history if len(row) > i]

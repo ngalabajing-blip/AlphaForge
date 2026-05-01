@@ -1,16 +1,17 @@
 """Typer entrypoint."""
+
 from __future__ import annotations
 
 import typer
 
 from alphaforge_cli.commands import (
-    auth_app,
     audits_app,
+    auth_app,
     backtests_app,
+    chains_app,
     market_app,
     signals_app,
     strategies_app,
-    chains_app,
 )
 
 app = typer.Typer(
@@ -31,6 +32,7 @@ app.add_typer(chains_app, name="chains", help="On-chain helpers")
 @app.command()
 def version() -> None:
     from alphaforge_cli import __version__
+
     typer.echo(f"alphaforge-cli {__version__}")
 
 

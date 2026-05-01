@@ -1,4 +1,5 @@
 """Solana adapter — uses HTTP getSlot + getBlock polling, optional WebSocket."""
+
 from __future__ import annotations
 
 import asyncio
@@ -7,13 +8,13 @@ from decimal import Decimal
 from typing import Any
 
 import httpx
+from alphaforge_shared.events import BlockEvent, TransactionEvent
+from alphaforge_shared.logging import get_logger
+from alphaforge_shared.topics import T_BLOCKS, T_TRANSACTIONS
 
 from alphaforge_ingestor.adapters.base import ChainAdapter
 from alphaforge_ingestor.config import get_settings
 from alphaforge_ingestor.kafka_sink import KafkaSink
-from alphaforge_shared.events import BlockEvent, TransactionEvent
-from alphaforge_shared.logging import get_logger
-from alphaforge_shared.topics import T_BLOCKS, T_TRANSACTIONS
 
 log = get_logger("alphaforge_ingestor.sol")
 
@@ -28,8 +29,9 @@ class SolanaAdapter(ChainAdapter):
         if not url:
             log.warning("sol_no_rpc", chain=self.spec.id)
             return
-        self._http = httpx.AsyncClient(base_url=url, timeout=15.0,
-                                       headers={"Content-Type": "application/json"})
+        self._http = httpx.AsyncClient(
+            base_url=url, timeout=15.0, headers={"Content-Type": "application/json"}
+        )
         settings = get_settings()
         last_slot: int | None = None
         while True:
@@ -57,7 +59,13 @@ class SolanaAdapter(ChainAdapter):
         assert self._http is not None
         try:
             resp = await self._http.post(
-                "", json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params or []}
+                "",
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": method,
+                    "params": params or [],
+                },
             )
             resp.raise_for_status()
             data = resp.json()
@@ -66,8 +74,17 @@ class SolanaAdapter(ChainAdapter):
             return None
 
     async def _fetch_and_emit(self, slot: int, sink: KafkaSink) -> None:
-        block = await self._rpc("getBlock", [slot, {"transactionDetails": "signatures",
-                                                     "rewards": False, "maxSupportedTransactionVersion": 0}])
+        block = await self._rpc(
+            "getBlock",
+            [
+                slot,
+                {
+                    "transactionDetails": "signatures",
+                    "rewards": False,
+                    "maxSupportedTransactionVersion": 0,
+                },
+            ],
+        )
         if not isinstance(block, dict):
             return
         be = BlockEvent(
@@ -76,7 +93,7 @@ class SolanaAdapter(ChainAdapter):
             height=slot,
             block_hash=block.get("blockhash", ""),
             parent_hash=block.get("previousBlockhash", ""),
-            tx_count=len(block.get("signatures", [])) if isinstance(block.get("signatures"), list) else 0,
+            tx_count=(len(block.get("signatures", [])) if isinstance(block.get("signatures"), list) else 0),
         )
         await sink.publish(T_BLOCKS, be, key=self.spec.id, chain=self.spec.id)
         # signatures only — the worker can request full tx detail if needed.

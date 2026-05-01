@@ -1,9 +1,9 @@
 """Indicator base class and registry."""
+
 from __future__ import annotations
 
 import abc
-from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any
 
 
 class Indicator(abc.ABC):
@@ -12,12 +12,10 @@ class Indicator(abc.ABC):
     name: str
 
     @abc.abstractmethod
-    def update(self, candle: dict) -> Any:
-        ...
+    def update(self, candle: dict) -> Any: ...
 
     @abc.abstractmethod
-    def latest(self) -> Any:
-        ...
+    def latest(self) -> Any: ...
 
     def history(self, n: int = 200) -> list[float]:
         return list(getattr(self, "_values", []))[-n:]
@@ -31,4 +29,5 @@ def register_indicator(name: str):  # type: ignore[no-untyped-def]
         cls.name = name
         INDICATORS[name] = cls
         return cls
+
     return deco

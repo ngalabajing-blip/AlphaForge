@@ -1,4 +1,5 @@
 """Thin HTTP client wrapping the AlphaForge REST API."""
+
 from __future__ import annotations
 
 import httpx
@@ -16,7 +17,7 @@ class APIClient:
             headers["X-API-Key"] = self.config.api_key
         self.http = httpx.Client(base_url=self.config.api_url, headers=headers, timeout=15.0)
 
-    def __enter__(self) -> "APIClient":
+    def __enter__(self) -> APIClient:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:  # type: ignore[no-untyped-def]

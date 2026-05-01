@@ -1,4 +1,5 @@
 """Telegram bot delivery."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -21,12 +22,15 @@ class TelegramChannel(Channel):
             return DeliveryResult(self.name, False, error="missing_config")
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         try:
-            r = await self._http.post(url, json={
-                "chat_id": chat_id,
-                "text": rendered["markdown"],
-                "parse_mode": "Markdown",
-                "disable_web_page_preview": True,
-            })
+            r = await self._http.post(
+                url,
+                json={
+                    "chat_id": chat_id,
+                    "text": rendered["markdown"],
+                    "parse_mode": "Markdown",
+                    "disable_web_page_preview": True,
+                },
+            )
             r.raise_for_status()
             return DeliveryResult(self.name, True)
         except Exception as exc:  # noqa: BLE001

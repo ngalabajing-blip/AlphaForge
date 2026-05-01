@@ -1,11 +1,12 @@
 """Top-level audit orchestrator."""
+
 from __future__ import annotations
 
-import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
+from alphaforge_shared.logging import get_logger
 
 from alphaforge_auditor.fetchers.bytecode import BytecodeFetcher
 from alphaforge_auditor.fetchers.source import SourceFetcher
@@ -13,7 +14,6 @@ from alphaforge_auditor.scanners.bytecode_scanner import BytecodeScanner
 from alphaforge_auditor.scanners.source_scanner import SourceScanner
 from alphaforge_auditor.scanners.token_scanner import TokenScanner
 from alphaforge_auditor.scoring import score_findings
-from alphaforge_shared.logging import get_logger
 
 log = get_logger("alphaforge_auditor.engine")
 
@@ -40,7 +40,7 @@ class AuditEngine:
                 "address": address,
                 "status": "failed",
                 "error": "bytecode_unavailable",
-                "completed_at": datetime.now(tz=timezone.utc).isoformat(),
+                "completed_at": datetime.now(tz=UTC).isoformat(),
             }
 
         bytecode_scanner = BytecodeScanner()
@@ -65,5 +65,5 @@ class AuditEngine:
             "findings": findings,
             "bytecode_size": len(bytecode),
             "has_source": bool(source and source.get("source_code")),
-            "completed_at": datetime.now(tz=timezone.utc).isoformat(),
+            "completed_at": datetime.now(tz=UTC).isoformat(),
         }

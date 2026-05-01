@@ -1,6 +1,5 @@
-from typer.testing import CliRunner
-
 from alphaforge_cli.app import app
+from typer.testing import CliRunner
 
 runner = CliRunner()
 
@@ -13,5 +12,13 @@ def test_root_help():
 
 def test_subcommands_registered():
     result = runner.invoke(app, ["--help"])
-    for cmd in ("auth", "strategies", "backtests", "signals", "audits", "market", "chains"):
+    for cmd in (
+        "auth",
+        "strategies",
+        "backtests",
+        "signals",
+        "audits",
+        "market",
+        "chains",
+    ):
         assert cmd in result.stdout

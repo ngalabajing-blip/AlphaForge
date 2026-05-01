@@ -1,8 +1,6 @@
 import pytest
-
 from alphaforge_shared.exceptions import StrategyParseError
 from alphaforge_worker.dsl.parser import parse_strategy
-
 
 YAML = """
 strategy: ema-cross

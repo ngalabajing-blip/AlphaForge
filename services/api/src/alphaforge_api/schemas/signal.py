@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class SignalQuery(BaseModel):
-    strategy_id: Optional[str] = None
-    symbol: Optional[str] = None
-    action: Optional[str] = None
-    since: Optional[datetime] = None
-    until: Optional[datetime] = None
+    strategy_id: str | None = None
+    symbol: str | None = None
+    action: str | None = None
+    since: datetime | None = None
+    until: datetime | None = None
     limit: int = Field(default=100, ge=1, le=1000)
 
 
@@ -26,6 +25,6 @@ class SignalOut(BaseModel):
     symbol: str
     action: str
     strength: Decimal
-    suggested_size: Optional[Decimal]
+    suggested_size: Decimal | None
     indicators: dict
     reasons: list[str]

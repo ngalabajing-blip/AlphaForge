@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,11 +21,11 @@ class SignalRepository:
     async def query(
         self,
         *,
-        strategy_id: Optional[str] = None,
-        symbol: Optional[str] = None,
-        action: Optional[str] = None,
-        since: Optional[datetime] = None,
-        until: Optional[datetime] = None,
+        strategy_id: str | None = None,
+        symbol: str | None = None,
+        action: str | None = None,
+        since: datetime | None = None,
+        until: datetime | None = None,
         limit: int = 100,
     ) -> list[Signal]:
         stmt = select(Signal)

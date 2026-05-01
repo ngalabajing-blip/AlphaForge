@@ -74,7 +74,11 @@ def publish_version(
     notes: str = typer.Option("", "--notes"),
 ) -> None:
     raw = file.read_text()
-    payload = {"raw_source": raw, "parameters": _parse_parameters(raw), "notes": notes or None}
+    payload = {
+        "raw_source": raw,
+        "parameters": _parse_parameters(raw),
+        "notes": notes or None,
+    }
     with APIClient() as client:
         resp = client.post(f"/api/v1/strategies/{strategy_id}/versions", json=payload)
     console.print_json(data=resp)

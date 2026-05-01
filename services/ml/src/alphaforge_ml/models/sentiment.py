@@ -5,28 +5,55 @@ By default uses a hand-curated lexicon (no external deps) so the service
 remains useful in dev. When ``ML_SENTIMENT_BACKEND=transformer`` is set and
 ``transformers`` is installed, swaps in a fine-tuned sentiment model.
 """
+
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Sequence
 
 
 @dataclass
 class SentimentResult:
-    score: float        # -1.0 (very negative) .. 1.0 (very positive)
-    label: str          # "negative" | "neutral" | "positive"
+    score: float  # -1.0 (very negative) .. 1.0 (very positive)
+    label: str  # "negative" | "neutral" | "positive"
     confidence: float
     matched_terms: list[str]
 
 
 _POSITIVE_TERMS = {
-    "moon", "bullish", "pump", "rally", "ath", "breakout", "buy", "long", "accumulate",
-    "support", "rebound", "rip", "rocket", "send it", "mooning", "soar",
+    "moon",
+    "bullish",
+    "pump",
+    "rally",
+    "ath",
+    "breakout",
+    "buy",
+    "long",
+    "accumulate",
+    "support",
+    "rebound",
+    "rip",
+    "rocket",
+    "send it",
+    "mooning",
+    "soar",
 }
 _NEGATIVE_TERMS = {
-    "rug", "dump", "scam", "bearish", "sell", "short", "exit liquidity", "rekt",
-    "honeypot", "exit scam", "bear", "panic", "crash", "drain", "drop",
+    "rug",
+    "dump",
+    "scam",
+    "bearish",
+    "sell",
+    "short",
+    "exit liquidity",
+    "rekt",
+    "honeypot",
+    "exit scam",
+    "bear",
+    "panic",
+    "crash",
+    "drain",
+    "drop",
 }
 _INTENSIFIERS = {"very", "super", "extremely", "huge", "massive"}
 _NEGATIONS = {"not", "no", "never", "nope"}
@@ -84,7 +111,10 @@ class TransformerSentiment:
         except ImportError:
             return None
         try:
-            self._pipe = pipeline("sentiment-analysis", model="finiteautomata/bertweet-base-sentiment-analysis")
+            self._pipe = pipeline(
+                "sentiment-analysis",
+                model="finiteautomata/bertweet-base-sentiment-analysis",
+            )
         except Exception:
             self._pipe = None
         return self._pipe

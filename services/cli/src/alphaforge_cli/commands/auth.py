@@ -11,7 +11,10 @@ console = Console()
 
 
 @auth_app.command("login")
-def login(email: str = typer.Option(...), password: str = typer.Option(..., prompt=True, hide_input=True)) -> None:
+def login(
+    email: str = typer.Option(...),
+    password: str = typer.Option(..., prompt=True, hide_input=True),
+) -> None:
     """Log in and persist access tokens locally."""
     config = CLIConfig.load()
     with APIClient(config) as client:

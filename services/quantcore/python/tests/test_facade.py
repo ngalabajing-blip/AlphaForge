@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 
-from alphaforge_quantcore import OrderBook, ema, rsi, atr, vwap
+from alphaforge_quantcore import OrderBook, atr, ema, rsi, vwap
 
 
 def test_orderbook_match_partial() -> None:

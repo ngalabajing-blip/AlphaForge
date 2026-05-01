@@ -10,11 +10,12 @@ These wrappers are intentionally minimal — they exist to centralise:
 Services should import :class:`EventProducer` / :class:`EventConsumer` rather
 than instantiating ``aiokafka`` directly.
 """
+
 from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator, Awaitable, Callable
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, Generic, TypeVar
 
 import orjson
 
@@ -38,7 +39,7 @@ def serialize_event(event: BaseEvent) -> bytes:
     return orjson.dumps(payload, default=_orjson_default)
 
 
-def deserialize_event(raw: bytes, model: Type[E]) -> E:
+def deserialize_event(raw: bytes, model: type[E]) -> E:
     obj = orjson.loads(raw)
     return model.model_validate(obj)
 
@@ -84,9 +85,7 @@ class EventProducer:
         if not isinstance(event, BaseEvent):
             raise KafkaError(f"event must be BaseEvent, got {type(event)}")
         if event.schema != topic.name:
-            raise KafkaError(
-                f"schema mismatch: event.schema={event.schema!r} topic={topic.name!r}"
-            )
+            raise KafkaError(f"schema mismatch: event.schema={event.schema!r} topic={topic.name!r}")
         payload = serialize_event(event)
         await self._producer.send_and_wait(
             topic.name,
@@ -104,7 +103,7 @@ class EventConsumer(Generic[E]):
         *,
         group_id: str,
         topics: list[Topic],
-        model: Type[E],
+        model: type[E],
         auto_offset_reset: str = "latest",
     ) -> None:
         self.bootstrap = bootstrap
@@ -127,7 +126,11 @@ class EventConsumer(Generic[E]):
             enable_auto_commit=False,
         )
         await self._consumer.start()
-        log.info("kafka_consumer_started", group=self.group_id, topics=[t.name for t in self.topics])
+        log.info(
+            "kafka_consumer_started",
+            group=self.group_id,
+            topics=[t.name for t in self.topics],
+        )
 
     async def stop(self) -> None:
         if self._consumer is not None:

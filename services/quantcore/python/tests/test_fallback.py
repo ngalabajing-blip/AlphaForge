@@ -1,5 +1,6 @@
 """Verify the Python fallback implementations (used when Rust extension unavailable)."""
-from alphaforge_quantcore import OrderBook, ema, rsi, atr, vwap
+
+from alphaforge_quantcore import OrderBook, atr, ema, rsi, vwap
 
 
 def test_book_match():

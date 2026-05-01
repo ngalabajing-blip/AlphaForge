@@ -9,19 +9,20 @@ All events extend :class:`BaseEvent`, which carries a stable envelope:
   * ``schema``    — fully qualified topic name + version
   * ``trace_id``  — OpenTelemetry trace id, if available
 """
+
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Annotated, Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 def _now() -> datetime:
-    return datetime.now(tz=timezone.utc)
+    return datetime.now(tz=UTC)
 
 
 def _new_id() -> str:
@@ -45,7 +46,7 @@ class BaseEvent(BaseModel):
     ts: datetime = Field(default_factory=_now)
     producer: str
     schema: str
-    trace_id: Optional[str] = None
+    trace_id: str | None = None
 
 
 # ── Chain ingestion ────────────────────────────────────────────────────────────
@@ -56,9 +57,9 @@ class BlockEvent(BaseEvent):
     block_hash: str
     parent_hash: str
     tx_count: int
-    gas_used: Optional[int] = None
-    gas_limit: Optional[int] = None
-    miner: Optional[str] = None
+    gas_used: int | None = None
+    gas_limit: int | None = None
+    miner: str | None = None
 
 
 class TransactionEvent(BaseEvent):
@@ -67,13 +68,13 @@ class TransactionEvent(BaseEvent):
     block_height: int
     tx_hash: str
     sender: str
-    recipient: Optional[str]
+    recipient: str | None
     value_native: Decimal
-    gas_price: Optional[Decimal] = None
-    gas_used: Optional[int] = None
+    gas_price: Decimal | None = None
+    gas_used: int | None = None
     success: bool = True
-    method_id: Optional[str] = None  # 4-byte selector for EVM
-    raw_input: Optional[str] = None
+    method_id: str | None = None  # 4-byte selector for EVM
+    raw_input: str | None = None
 
     @field_validator("value_native", mode="before")
     @classmethod
@@ -89,27 +90,27 @@ class LogEvent(BaseEvent):
     address: str
     topics: list[str]
     data: str
-    decoded_event: Optional[str] = None
-    decoded_args: Optional[dict[str, Any]] = None
+    decoded_event: str | None = None
+    decoded_args: dict[str, Any] | None = None
 
 
 # ── Market ─────────────────────────────────────────────────────────────────────
 class PriceEvent(BaseEvent):
     schema: Literal["af.market.price.v1"] = "af.market.price.v1"
-    source: str                      # "coingecko", "defillama", "uniswap", …
-    chain: Optional[str]
+    source: str  # "coingecko", "defillama", "uniswap", …
+    chain: str | None
     symbol: str
-    address: Optional[str]           # token contract / mint
+    address: str | None  # token contract / mint
     price_usd: Decimal
-    market_cap: Optional[Decimal] = None
-    volume_24h: Optional[Decimal] = None
-    change_24h: Optional[Decimal] = None
+    market_cap: Decimal | None = None
+    volume_24h: Decimal | None = None
+    change_24h: Decimal | None = None
 
 
 class DexTradeEvent(BaseEvent):
     schema: Literal["af.market.trade.v1"] = "af.market.trade.v1"
     chain: str
-    venue: str                       # "uniswap-v3", "raydium", …
+    venue: str  # "uniswap-v3", "raydium", …
     pool: str
     base_symbol: str
     quote_symbol: str
@@ -136,7 +137,7 @@ class LiquidityEvent(BaseEvent):
 # ── ML ─────────────────────────────────────────────────────────────────────────
 class AnomalyEvent(BaseEvent):
     schema: Literal["af.ml.anomaly.v1"] = "af.ml.anomaly.v1"
-    chain: Optional[str]
+    chain: str | None
     subject_type: Literal["address", "pool", "token", "tx"]
     subject: str
     score: float
@@ -149,11 +150,11 @@ class AnomalyEvent(BaseEvent):
 
 class SentimentEvent(BaseEvent):
     schema: Literal["af.ml.sentiment.v1"] = "af.ml.sentiment.v1"
-    source: str                      # "twitter", "reddit", "telegram", "news"
-    symbol: Optional[str]
-    address: Optional[str]
-    score: float                     # -1 (bearish) … +1 (bullish)
-    magnitude: float                 # 0 … 1
+    source: str  # "twitter", "reddit", "telegram", "news"
+    symbol: str | None
+    address: str | None
+    score: float  # -1 (bearish) … +1 (bullish)
+    magnitude: float  # 0 … 1
     text_excerpt: str
 
 
@@ -181,8 +182,8 @@ class SignalEvent(BaseEvent):
     run_id: str
     symbol: str
     action: SignalAction
-    strength: float                  # 0 … 1
-    suggested_size: Optional[Decimal] = None
+    strength: float  # 0 … 1
+    suggested_size: Decimal | None = None
     reasons: list[str] = Field(default_factory=list)
     indicators: dict[str, float] = Field(default_factory=dict)
 
@@ -195,7 +196,7 @@ class OrderEvent(BaseEvent):
     symbol: str
     side: Literal["buy", "sell"]
     quantity: Decimal
-    price: Optional[Decimal]
+    price: Decimal | None
     order_type: Literal["market", "limit", "stop", "stop-limit"]
     venue: str = "paper"
 
@@ -210,7 +211,7 @@ class FillEvent(BaseEvent):
     quantity: Decimal
     price: Decimal
     fees: Decimal = Decimal("0")
-    realized_pnl: Optional[Decimal] = None
+    realized_pnl: Decimal | None = None
 
 
 # ── Alerts / Audit ─────────────────────────────────────────────────────────────
@@ -221,7 +222,7 @@ class AlertEvent(BaseEvent):
     title: str
     body: str
     severity: EventSeverity
-    channels: list[str]              # ["telegram", "email", …]
+    channels: list[str]  # ["telegram", "email", …]
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -230,7 +231,7 @@ class NotificationResult(BaseEvent):
     alert_id: str
     channel: str
     success: bool
-    error: Optional[str] = None
+    error: str | None = None
     delivered_at: datetime = Field(default_factory=_now)
 
 
@@ -240,7 +241,7 @@ class AuditRequest(BaseEvent):
     chain: str
     address: str
     deep: bool = True
-    requested_by: Optional[str] = None
+    requested_by: str | None = None
 
 
 class AuditFinding(BaseModel):
@@ -248,10 +249,10 @@ class AuditFinding(BaseModel):
     severity: EventSeverity
     title: str
     description: str
-    location: Optional[str] = None   # file:line or bytecode offset
-    evidence: Optional[str] = None
-    cwe: Optional[str] = None
-    swc: Optional[str] = None
+    location: str | None = None  # file:line or bytecode offset
+    evidence: str | None = None
+    cwe: str | None = None
+    swc: str | None = None
 
 
 class AuditReport(BaseEvent):
@@ -267,5 +268,7 @@ class AuditReport(BaseEvent):
     summary: str
 
 
-__all__ = [name for name in dict(globals()) if name.endswith(("Event", "Result", "Request", "Report", "Finding"))]
+__all__ = [
+    name for name in dict(globals()) if name.endswith(("Event", "Result", "Request", "Report", "Finding"))
+]
 __all__.extend(["BaseEvent", "EventSeverity", "SignalAction"])

@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime
-from decimal import Decimal
-
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from alphaforge_api.core.kafka_client import kafka_producer
 from alphaforge_api.repositories.backtest import BacktestRepository
 from alphaforge_api.repositories.strategy import StrategyRepository
 from alphaforge_api.schemas.backtest import BacktestCreate
-from alphaforge_shared.events import OrderEvent  # placeholder for future direct enqueue
 
 
 class BacktestService:
@@ -56,8 +51,13 @@ class BacktestService:
         # We do NOT import the worker package — talk to it via task name only to keep
         # the API/worker boundary clean.
         from alphaforge_api.core.config import get_settings
+
         settings = get_settings()
-        app = Celery("af-api", broker=settings.celery_broker_url, backend=settings.celery_result_backend)
+        app = Celery(
+            "af-api",
+            broker=settings.celery_broker_url,
+            backend=settings.celery_result_backend,
+        )
         app.send_task("alphaforge_worker.run_backtest", args=[backtest_id])
 
     async def cancel(self, backtest_id: str) -> None:

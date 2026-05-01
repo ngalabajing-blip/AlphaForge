@@ -4,6 +4,7 @@ Common settings primitives shared by all services.
 Each service has its own :class:`pydantic_settings.BaseSettings` subclass that
 extends :class:`CommonSettings` to pick up everything below.
 """
+
 from __future__ import annotations
 
 from functools import lru_cache

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from alphaforge_ml.features.extractors import (
     extract_candle_features,
@@ -14,9 +14,27 @@ def test_trade_window_empty():
 
 def test_trade_window_fields():
     trades = [
-        {"amount_in": 1, "side": "buy", "buyer": "a", "price": 100, "ts": datetime.now(tz=timezone.utc)},
-        {"amount_in": 2, "side": "sell", "buyer": "b", "price": 110, "ts": datetime.now(tz=timezone.utc)},
-        {"amount_in": 3, "side": "buy", "buyer": "a", "price": 105, "ts": datetime.now(tz=timezone.utc)},
+        {
+            "amount_in": 1,
+            "side": "buy",
+            "buyer": "a",
+            "price": 100,
+            "ts": datetime.now(tz=UTC),
+        },
+        {
+            "amount_in": 2,
+            "side": "sell",
+            "buyer": "b",
+            "price": 110,
+            "ts": datetime.now(tz=UTC),
+        },
+        {
+            "amount_in": 3,
+            "side": "buy",
+            "buyer": "a",
+            "price": 105,
+            "ts": datetime.now(tz=UTC),
+        },
     ]
     f = extract_trade_window(trades)
     assert f.n_trades == 3
@@ -28,11 +46,16 @@ def test_trade_window_fields():
 def test_candle_features_basic():
     candles = []
     for i in range(50):
-        candles.append({
-            "ts": datetime.now(tz=timezone.utc),
-            "open": 100 + i, "high": 101 + i, "low": 99 + i, "close": 100 + i,
-            "volume": 5,
-        })
+        candles.append(
+            {
+                "ts": datetime.now(tz=UTC),
+                "open": 100 + i,
+                "high": 101 + i,
+                "low": 99 + i,
+                "close": 100 + i,
+                "volume": 5,
+            }
+        )
     rows = extract_candle_features(candles, fast=5, slow=10)
     assert len(rows) == 50
     assert rows[-1].sma_slow > 0

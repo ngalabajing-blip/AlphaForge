@@ -21,12 +21,22 @@ def ticker(symbol: str = typer.Argument("ETH/USDT")) -> None:
 @market_app.command("candles")
 def candles(symbol: str, timeframe: str = typer.Option("1h"), limit: int = typer.Option(50)) -> None:
     with APIClient() as client:
-        resp = client.get(f"/api/v1/market/candles/{symbol}", params={"timeframe": timeframe, "limit": limit})
+        resp = client.get(
+            f"/api/v1/market/candles/{symbol}",
+            params={"timeframe": timeframe, "limit": limit},
+        )
     table = Table(title=f"{symbol} {timeframe}")
     for col in ("ts", "open", "high", "low", "close", "volume"):
         table.add_column(col)
     for c in resp.get("candles", []):
-        table.add_row(c["ts"], str(c["open"]), str(c["high"]), str(c["low"]), str(c["close"]), str(c["volume"]))
+        table.add_row(
+            c["ts"],
+            str(c["open"]),
+            str(c["high"]),
+            str(c["low"]),
+            str(c["close"]),
+            str(c["volume"]),
+        )
     console.print(table)
 
 

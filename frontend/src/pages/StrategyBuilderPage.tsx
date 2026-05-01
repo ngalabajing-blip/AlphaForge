@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { useBuilderStore } from "@/store/builder";
 import { compileGraphToDSL } from "@/strategyBuilder/compile";
 import { Palette } from "@/strategyBuilder/Palette";
-import { Inspector } from "@/strategyBuilder/Inspector";
+import Inspector from "@/strategyBuilder/Inspector";
 import { nodeTypes } from "@/strategyBuilder/nodes";
 import api from "@/lib/api";
 
@@ -20,8 +20,8 @@ const newId = (kind: string) => `${kind}-${_idCounter++}`;
 
 export default function StrategyBuilderPage() {
   const {
-    nodes, edges, setGraph, upsertNode, upsertEdge, removeEdge,
-    symbols, timeframe, setTimeframe, parameters, reset,
+    nodes, edges, setGraph, upsertNode, removeEdge,
+    symbols, timeframe, parameters, reset,
   } = useBuilderStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [name, setName] = useState("My Strategy");
@@ -112,13 +112,7 @@ export default function StrategyBuilderPage() {
       </div>
 
       <Card title="Inspector" subtitle={selectedNode ? selectedNode.data.label : "Select a node"}>
-        <Inspector
-          selectedNode={selectedNode}
-          onChange={(node) => upsertNode(node)}
-          timeframe={timeframe}
-          setTimeframe={setTimeframe}
-          symbols={symbols}
-        />
+        <Inspector selected={selectedNode} />
       </Card>
     </div>
   );

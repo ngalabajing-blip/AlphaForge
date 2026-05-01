@@ -1,11 +1,14 @@
 """FastAPI application entry point for AlphaForge API gateway."""
+
 from __future__ import annotations
 
 import time
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
-from typing import AsyncIterator
+from datetime import UTC, datetime
 
+from alphaforge_shared.logging import configure_logging, get_logger
+from alphaforge_shared.telemetry import configure_tracing
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -22,8 +25,6 @@ from alphaforge_api.errors import register_error_handlers
 from alphaforge_api.graphql.schema import graphql_router
 from alphaforge_api.middleware import RequestContextMiddleware
 from alphaforge_api.ws.router import router as ws_router
-from alphaforge_shared.logging import configure_logging, get_logger
-from alphaforge_shared.telemetry import configure_tracing
 
 settings = get_settings()
 configure_logging(level=settings.app_log_level, json_logs=settings.is_production)
@@ -121,7 +122,7 @@ async def healthz() -> dict[str, object]:
     return {
         "status": "ok",
         "version": __version__,
-        "time": datetime.now(tz=timezone.utc).isoformat(),
+        "time": datetime.now(tz=UTC).isoformat(),
     }
 
 

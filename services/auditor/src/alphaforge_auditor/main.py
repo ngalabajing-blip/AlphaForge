@@ -1,13 +1,15 @@
 """Auditor service entrypoint — listens for audit-requested events."""
+
 from __future__ import annotations
 
 import asyncio
 import signal
 
-from alphaforge_auditor.config import get_settings
-from alphaforge_auditor.consumer import AuditConsumer
 from alphaforge_shared.logging import configure_logging, get_logger
 from alphaforge_shared.telemetry import configure_tracing
+
+from alphaforge_auditor.config import get_settings
+from alphaforge_auditor.consumer import AuditConsumer
 
 log = get_logger("alphaforge_auditor.main")
 

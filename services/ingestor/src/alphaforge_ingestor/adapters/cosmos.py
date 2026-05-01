@@ -1,18 +1,18 @@
 """Cosmos / Tendermint adapter (HTTP-only, minimal)."""
+
 from __future__ import annotations
 
 import asyncio
 import os
-from decimal import Decimal
 
 import httpx
+from alphaforge_shared.events import BlockEvent
+from alphaforge_shared.logging import get_logger
+from alphaforge_shared.topics import T_BLOCKS
 
 from alphaforge_ingestor.adapters.base import ChainAdapter
 from alphaforge_ingestor.config import get_settings
 from alphaforge_ingestor.kafka_sink import KafkaSink
-from alphaforge_shared.events import BlockEvent
-from alphaforge_shared.logging import get_logger
-from alphaforge_shared.topics import T_BLOCKS
 
 log = get_logger("alphaforge_ingestor.cosmos")
 

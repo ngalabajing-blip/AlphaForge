@@ -1,0 +1,21 @@
+line-length = 110
+target-version = "py312"
+
+[lint]
+select = ["E", "F", "I", "B", "UP", "N"]
+ignore = [
+    "E501",  # line length: handled by black
+    "E741",  # ambiguous variable names like `l` (used for OHLCV `low`)
+    "B008",  # FastAPI `Depends(...)` defaults are idiomatic
+    "N803",  # allow snake_case-relaxed function arg names
+    "N806",  # allow non-PEP8 local variable names (e.g. OHLCV)
+    "UP038", # `isinstance(x, (A, B))` — keep tuple form for compatibility
+    "B017",  # `pytest.raises(Exception)` — broad asserts in test scaffolding
+    "B905",  # `zip()` without `strict=` — keep behaviour matrix simple
+    "N818",  # exception class name suffix — domain-specific names ok
+    "F841",  # unused local in placeholder/template code
+    "F401",  # unused import (ok in __init__ re-exports)
+    "UP042", # `class Foo(str, Enum)` — common Python<3.11 pattern, kept for serialisation
+    "UP046", # generic protocol form — keep `Generic[T]` for older runtime compat
+    "UP047", # generic function form — keep TypeVar for older runtime compat
+]

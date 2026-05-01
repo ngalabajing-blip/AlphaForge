@@ -6,14 +6,16 @@ through ``alphaforge_quantcore._native``. We provide pure-Python fallbacks so
 unit tests + the worker service still work in development environments
 without a Rust toolchain.
 """
+
 from __future__ import annotations
 
 import math
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
-from typing import Iterable, Sequence
 
 try:
     from . import _native  # type: ignore[attr-defined]
+
     _HAS_NATIVE = True
 except ImportError:
     _native = None  # type: ignore[assignment]
@@ -38,7 +40,7 @@ def is_native() -> bool:
 # ── data classes ──────────────────────────────────────────────────────────────
 @dataclass
 class Order:
-    side: str           # "buy" | "sell"
+    side: str  # "buy" | "sell"
     price: float
     quantity: float
     order_id: int = 0
@@ -95,15 +97,21 @@ class OrderBook:
         book = self._asks if taker.side == "buy" else self._bids
         while taker.quantity > 0 and book:
             best = book[0]
-            if (taker.side == "buy" and best.price > taker.price) or \
-               (taker.side == "sell" and best.price < taker.price):
+            if (taker.side == "buy" and best.price > taker.price) or (
+                taker.side == "sell" and best.price < taker.price
+            ):
                 break
             for maker in list(best.orders):
                 qty = min(maker.quantity, taker.quantity)
-                trades.append(Trade(
-                    price=best.price, quantity=qty,
-                    aggressor=taker.side, maker_id=maker.order_id, taker_id=taker.order_id,
-                ))
+                trades.append(
+                    Trade(
+                        price=best.price,
+                        quantity=qty,
+                        aggressor=taker.side,
+                        maker_id=maker.order_id,
+                        taker_id=taker.order_id,
+                    )
+                )
                 maker.quantity -= qty
                 taker.quantity -= qty
                 if maker.quantity <= 0:
@@ -174,8 +182,8 @@ def rsi(values: Sequence[float], period: int = 14) -> list[float]:
         losses.append(max(-d, 0.0))
     out = [50.0] * len(values)
     for i in range(period, len(values)):
-        avg_g = sum(gains[i - period + 1:i + 1]) / period
-        avg_l = sum(losses[i - period + 1:i + 1]) / period
+        avg_g = sum(gains[i - period + 1 : i + 1]) / period
+        avg_l = sum(losses[i - period + 1 : i + 1]) / period
         if avg_l == 0:
             out[i] = 100.0
         else:
@@ -184,7 +192,12 @@ def rsi(values: Sequence[float], period: int = 14) -> list[float]:
     return out
 
 
-def atr(highs: Sequence[float], lows: Sequence[float], closes: Sequence[float], period: int = 14) -> list[float]:
+def atr(
+    highs: Sequence[float],
+    lows: Sequence[float],
+    closes: Sequence[float],
+    period: int = 14,
+) -> list[float]:
     if _HAS_NATIVE:
         return list(_native.atr(list(highs), list(lows), list(closes), period))  # type: ignore[union-attr]
     n = len(closes)
@@ -195,17 +208,19 @@ def atr(highs: Sequence[float], lows: Sequence[float], closes: Sequence[float], 
         if i == 0:
             trs.append(highs[i] - lows[i])
         else:
-            trs.append(max(
-                highs[i] - lows[i],
-                abs(highs[i] - closes[i - 1]),
-                abs(lows[i] - closes[i - 1]),
-            ))
+            trs.append(
+                max(
+                    highs[i] - lows[i],
+                    abs(highs[i] - closes[i - 1]),
+                    abs(lows[i] - closes[i - 1]),
+                )
+            )
     out: list[float] = []
     for i in range(n):
         if i < period:
             out.append(sum(trs[: i + 1]) / (i + 1))
         else:
-            out.append(sum(trs[i - period + 1: i + 1]) / period)
+            out.append(sum(trs[i - period + 1 : i + 1]) / period)
     return out
 
 

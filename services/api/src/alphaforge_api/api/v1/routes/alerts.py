@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from alphaforge_api.core.database import get_session
-from alphaforge_api.core.security import CurrentUser, get_current_user, require_permission
+from alphaforge_api.core.security import (
+    CurrentUser,
+    get_current_user,
+    require_permission,
+)
 from alphaforge_api.repositories.alert import AlertRepository
 from alphaforge_api.schemas.alert import AlertCreate, AlertOut, AlertUpdate
 

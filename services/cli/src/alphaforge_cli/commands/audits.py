@@ -11,7 +11,11 @@ console = Console()
 
 
 @audits_app.command("request")
-def request(address: str, chain: str = typer.Option("eth"), deep: bool = typer.Option(True, "--deep/--shallow")) -> None:
+def request(
+    address: str,
+    chain: str = typer.Option("eth"),
+    deep: bool = typer.Option(True, "--deep/--shallow"),
+) -> None:
     """Request a smart contract audit."""
     with APIClient() as client:
         resp = client.post("/api/v1/audits", json={"address": address, "chain": chain, "deep": deep})

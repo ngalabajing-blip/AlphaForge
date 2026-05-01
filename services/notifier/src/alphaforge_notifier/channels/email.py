@@ -1,4 +1,5 @@
 """SMTP email delivery."""
+
 from __future__ import annotations
 
 import asyncio
@@ -11,8 +12,15 @@ from alphaforge_notifier.channels.base import Channel, DeliveryResult
 class EmailChannel(Channel):
     name = "email"
 
-    def __init__(self, *, host: str | None, port: int, user: str | None,
-                 password: str | None, sender: str) -> None:
+    def __init__(
+        self,
+        *,
+        host: str | None,
+        port: int,
+        user: str | None,
+        password: str | None,
+        sender: str,
+    ) -> None:
         self.host = host
         self.port = port
         self.user = user
@@ -41,6 +49,7 @@ class EmailChannel(Channel):
 
     def _send_smtp(self, msg) -> None:  # type: ignore[no-untyped-def]
         import smtplib
+
         with smtplib.SMTP(self.host, self.port, timeout=8) as smtp:
             smtp.starttls()
             if self.user and self.password:

@@ -1,16 +1,16 @@
 """Kafka consumer for the alerts topic."""
+
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
 
 import orjson
+from alphaforge_shared.logging import get_logger
+from alphaforge_shared.topics import T_ALERTS, T_NOTIFICATION_RESULT
 
 from alphaforge_notifier.config import get_settings
 from alphaforge_notifier.dispatcher import NotifierDispatcher
-from alphaforge_shared.logging import get_logger
-from alphaforge_shared.topics import T_ALERTS, T_NOTIFICATION_RESULT
 
 log = get_logger("alphaforge_notifier.consumer")
 
@@ -48,7 +48,7 @@ class AlertConsumer:
             while not stop.is_set():
                 try:
                     msg = await asyncio.wait_for(consumer.__anext__(), timeout=2.0)
-                except (asyncio.TimeoutError, StopAsyncIteration):
+                except (TimeoutError, StopAsyncIteration):
                     continue
                 except Exception as exc:  # noqa: BLE001
                     log.exception("kafka_consumer_error", error=str(exc))
@@ -71,7 +71,7 @@ class AlertConsumer:
         out = {
             "alert_id": alert.get("alert_id"),
             "owner_id": alert.get("owner_id"),
-            "delivered_at": datetime.now(tz=timezone.utc).isoformat(),
+            "delivered_at": datetime.now(tz=UTC).isoformat(),
             "deliveries": [r.__dict__ for r in results],
         }
         try:
@@ -85,5 +85,5 @@ class AlertConsumer:
         while not stop.is_set():
             try:
                 await asyncio.wait_for(stop.wait(), timeout=15.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 pass

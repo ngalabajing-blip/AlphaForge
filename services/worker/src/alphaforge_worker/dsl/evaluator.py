@@ -8,19 +8,21 @@ Context:
 * ``state``: persisted strategy state (positions, last_signal, ...)
 * ``parameters``: strategy.parameters merged with backtest-supplied values
 """
+
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 from alphaforge_shared.exceptions import StrategyRuntimeError
+
 from alphaforge_worker.dsl.ast import (
     BinOp,
     Bool,
     Expr,
     FunctionCall,
     Number,
-    Rule,
     StrategyDoc,
     String,
     Symbol,
@@ -41,7 +43,7 @@ class EvalContext:
 @dataclass
 class RuleOutcome:
     rule_index: int
-    action: str            # buy/sell/close/hold/alert
+    action: str  # buy/sell/close/hold/alert
     size: float | None
     fired: bool
     reasons: list[str] = field(default_factory=list)
@@ -136,12 +138,21 @@ class StrategyEvaluator:
         raise StrategyRuntimeError(f"unsupported binop {op}")
 
     # ── functions ─────────────────────────────────────────────────────────────
+    _SERIES_FUNCS = frozenset({"cross_up", "cross_down", "pct_change"})
+
     def _call(self, node: FunctionCall, ctx: EvalContext) -> Any:
         name = node.name
-        args = [self._eval(a, ctx) for a in node.args]
+        if name in self._SERIES_FUNCS:
+            args: list[Any] = []
+            for a in node.args:
+                if isinstance(a, Symbol) and a.name in ctx.indicators_history:
+                    args.append(list(ctx.indicators_history[a.name]))
+                else:
+                    args.append(self._eval(a, ctx))
+        else:
+            args = [self._eval(a, ctx) for a in node.args]
         fn = _FUNCTIONS.get(name)
         if fn is None:
-            # series accessors like "fast[-1]" emulated as fn("at", series, idx)
             raise StrategyRuntimeError(f"unknown function: {name}")
         return fn(args, ctx)
 

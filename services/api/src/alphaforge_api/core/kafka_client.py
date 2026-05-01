@@ -1,9 +1,11 @@
 """API-side Kafka producer singleton (wraps shared :class:`EventProducer`)."""
+
 from __future__ import annotations
 
-from alphaforge_api.core.config import get_settings
 from alphaforge_shared.kafka import EventProducer
 from alphaforge_shared.logging import get_logger
+
+from alphaforge_api.core.config import get_settings
 
 log = get_logger("alphaforge_api.kafka")
 

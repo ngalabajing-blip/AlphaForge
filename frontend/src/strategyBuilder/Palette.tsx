@@ -1,5 +1,3 @@
-import { Card } from "@/components/ui/Card";
-
 type Item = { kind: string; label: string; params: Record<string, unknown>; group: string };
 
 const items: Item[] = [
