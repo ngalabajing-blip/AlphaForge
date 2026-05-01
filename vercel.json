@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "installCommand": "echo 'deps installed via buildCommand'",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/index.html" },
+    { "source": "/graphql", "destination": "/index.html" },
+    { "source": "/ws/(.*)", "destination": "/index.html" }
+  ],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- frontend/"
+}
